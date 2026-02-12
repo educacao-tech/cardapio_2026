@@ -38,6 +38,24 @@
                     "fundamental-gtl": "https://docs.google.com/document/d/1Ib0o9LwqO45IpIYNLNWoYPVyfGHNWS6l/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "etec": "https://docs.google.com/document/d/1NgfEqf5jsilKPRvkFr1g_FeOROEtkEsd/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
                 }
+            },
+            {
+                "weekId": "semana3-fev",
+                "title": "3ª SEM. - 16/02 a 20/02",
+                "startDate": "2026-02-16",
+                "endDate": "2026-02-20",
+                "active": true,
+                "links":
+                 {
+                    "creche-m-verde": "https://docs.google.com/document/d/1Q_YDH7Uvi5qoY_4W4YT9u-_IQxyoJ4JA/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "creches": "https://docs.google.com/document/d/19QoWVPLGJWzuGwCUTG-qCgcGfQuryGMN/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-braga": "https://docs.google.com/document/d/1sw1aEsA3L8oDsN0XpxyhBt7T1D0iA9je/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-anna": "https://docs.google.com/document/d/1LnOKdon8kzttrzbxJ505zcQE4fXwtoWV/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-aaugusto": "https://docs.google.com/document/d/1O7c5N6JylcDz7FfibmAiMfzS2_vePiWn/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-esther": "https://docs.google.com/document/d/1wCWD0cBxazncbSgpFfXsoQf7qrRYVC_r/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-gtl": "https://docs.google.com/document/d/19em4-Ynl_76AGRHRk9HDjLj4AzXMvPem/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "etec": "#https://docs.google.com/document/d/1NgfEqf5jsilKPRvkFr1g_FeOROEtkEsd/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
+                }
             }
         ]
     }
