@@ -1,0 +1,365 @@
+/* Variáveis de Cor e Configurações Globais */
+:root {
+    color-scheme: light dark;
+    /* Tema Claro (Padrão) */
+    --primary-color: #007bff;
+    --primary-color-dark: #0056b3;
+    --background-color: #f8f9fa;
+    --surface-color: #ffffff;
+    --medium-gray: #dee2e6;
+    --dark-gray: #343a40;
+    --text-color: #212529;
+    --text-color-muted: #6c757d;
+    --white: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --focus-ring-color: rgba(0, 123, 255, 0.5);
+    --highlight-background-color: #e6f7ff;
+    --highlight-shadow-color: rgba(0, 86, 179, 0.5);
+
+    /* Cores dos Botões */
+    --btn-creche-m-verde: #28a745;
+    --btn-creches: #17a2b8;
+    --btn-fundamental-braga: #ffc107;
+    --btn-fundamental-anna: #fd7e14;
+    --btn-fundamental-aaugusto: #dc3545;
+    --btn-fundamental-esther: #6f42c1;
+    --btn-fundamental-gtl: #6610f2;
+    --btn-etec: #343a40;
+}
+
+/* Tema Escuro (ativado via classe .dark-mode no <html>) */
+:root.dark-mode {
+    --primary-color: #3eadff;
+    --primary-color-dark: #007bff;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --text-color-muted: #888;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --focus-ring-color: rgba(62, 173, 255, 0.6);
+    --highlight-background-color: rgba(62, 173, 255, 0.1);
+    --highlight-shadow-color: rgba(62, 173, 255, 0.4);
+}
+
+/* Define a ordem explícita das camadas da cascata, da menor para a maior prioridade. */
+@layer reset, layout, components;
+
+@layer reset {
+
+    /* Reset de Box Model para um layout mais previsível */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    /* Estilos Base */
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    /*
+  Acessibilidade: Respeita a preferência do usuário por movimento reduzido.
+  Desativa animações e transições para uma experiência mais segura.
+*/
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer layout {
+
+    /* Cabeçalho */
+    .main-header {
+        background-color: var(--surface-color);
+        padding-block: 1rem;
+        padding-inline: 2rem;
+        border-block-end: 1px solid var(--medium-gray);
+    }
+
+    .header-content {
+        max-width: 1600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .header-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .main-header h1 {
+        margin: 0;
+        margin-block-start: 1rem;
+        color: var(--text-color);
+        text-align: center;
+        /* Tipografia fluida: se ajusta ao tamanho da tela */
+        font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
+    }
+
+    /* Conteúdo Principal */
+    .main-container {
+        max-width: 1600px;
+        margin: 2rem auto;
+        padding-inline: 1rem;
+    }
+
+    .columns-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    /* Rodapé */
+    .main-footer {
+        text-align: center;
+        padding: 2rem;
+        margin-block-start: 2rem;
+        background-color: var(--surface-color);
+        color: var(--text-color-muted);
+        font-size: 0.9rem;
+    }
+}
+
+@layer components {
+
+    /* Melhoria de Acessibilidade: Estilo de Foco unificado */
+    :is(.back-link a, .button, #theme-toggle):focus-visible {
+        box-shadow: 0 0 0 3px var(--focus-ring-color);
+        outline: none;
+    }
+
+    .button-column {
+        background-color: var(--surface-color);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px var(--shadow-color);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        flex: 0 1 340px;
+        /* Não cresce, pode encolher, com uma largura base de 340px */
+        max-width: 100%;
+        /* Animação de entrada */
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
+    }
+
+    .column-title {
+        /* Tipografia fluida: se ajusta ao tamanho da tela */
+        font-size: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
+        color: var(--text-color);
+        margin-top: 0;
+        margin-bottom: 1rem;
+        text-align: center;
+        border-block-end: 2px solid var(--background-color);
+        padding-block-end: 0.75rem;
+    }
+
+    /* Classe para ativar a animação quando o elemento está visível */
+    .button-column.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .back-link {
+        text-align: start;
+        margin: 0;
+    }
+
+    .back-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    /* Estilos dos Botões de Cardápio */
+    .button {
+        display: block;
+        text-decoration: none;
+        color: var(--white);
+        padding: 0.7rem;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.7rem;
+        /* Adicione esta linha para controlar o tamanho da fonte */
+        font-weight: 500;
+        transition: background-color 0.2s, transform 0.2s, filter 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+    }
+
+    /* Estilo para botões sem link (desabilitados) */
+    .button.disabled {
+        background-color: var(--medium-gray);
+        pointer-events: none;
+        /* Impede o clique */
+        cursor: not-allowed;
+        filter: grayscale(50%);
+    }
+
+    /* Cores específicas dos botões */
+    .creche-m-verde {
+        background-color: var(--btn-creche-m-verde);
+    }
+
+    .creches {
+        background-color: var(--btn-creches);
+    }
+
+    /* Cor de texto escura fixa para garantir contraste com o fundo amarelo em ambos os temas */
+    .fundamental-braga {
+        background-color: var(--btn-fundamental-braga);
+        color: #212529;
+    }
+
+    .fundamental-anna {
+        background-color: var(--btn-fundamental-anna);
+    }
+
+    .fundamental-aaugusto {
+        background-color: var(--btn-fundamental-aaugusto);
+    }
+
+    .fundamental-esther {
+        background-color: var(--btn-fundamental-esther);
+    }
+
+    .fundamental-gtl {
+        background-color: var(--btn-fundamental-gtl);
+    }
+
+    .etec {
+        background-color: var(--btn-etec);
+    }
+
+    /* Destaque de Semanas */
+    .current-week {
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 12px var(--highlight-shadow-color);
+        transform: scale(1.02);
+        background-color: var(--highlight-background-color);
+
+        .column-title::before {
+            content: '🗓️ ';
+            margin-inline-end: 8px;
+        }
+    }
+
+    .past-week {
+        opacity: 0.65;
+        filter: grayscale(80%);
+
+        &:hover {
+            opacity: 1;
+            filter: grayscale(0%);
+        }
+
+        .column-title::before {
+            content: '✅ ';
+            margin-inline-end: 5px;
+        }
+    }
+
+    /* Botão "Voltar ao Topo" */
+    #back-to-top {
+        display: none;
+        /* Alterado para 'flex' via JS na classe .show */
+        position: fixed;
+        inset-block-end: 20px;
+        inset-inline-end: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: var(--primary-color);
+        color: var(--white);
+        cursor: pointer;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        box-shadow: 0 4px 8px var(--shadow-color);
+        transition: opacity 0.3s, visibility 0.3s;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        &.show {
+            display: flex;
+        }
+    }
+
+    /* Estilos do Seletor de Tema */
+    #theme-toggle {
+        background: none;
+        border: 1px solid var(--medium-gray);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+
+        &:hover {
+            background-color: var(--background-color);
+        }
+    }
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+    .main-header {
+        padding-inline: 1rem;
+    }
+
+    .main-container {
+        margin: 1rem auto;
+    }
+
+    #back-to-top {
+        inset-block-end: 15px;
+        inset-inline-end: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+}
+
+/* Estilo para a caixa de mensagem de "nenhuma semana" */
+.message-box {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    margin: 2rem auto;
+    border: 1px dashed var(--medium-gray);
+    color: var(--text-color-muted);
+}
