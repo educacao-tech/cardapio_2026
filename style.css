@@ -118,6 +118,20 @@
         padding-inline: 1rem;
     }
 
+    .month-wrapper {
+        width: 100%;
+        margin-bottom: 3rem;
+    }
+
+    .month-title {
+        font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+        text-transform: capitalize;
+    }
+
+
     .columns-container {
         display: flex;
         flex-wrap: wrap;

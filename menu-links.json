@@ -1,46 +1,44 @@
 {
-    "semana1": {
-        "active": true,
-        "creche-m-verde": "https://docs.google.com/document/d/1RorUlhc-MReQLpOIn8MNJUeoNrzubHCs/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "creches": "https://docs.google.com/document/d/1t7bi1iF4QL9nG1HlQhvy7DNZwpzaQ6rW/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-braga": "https://docs.google.com/document/d/1m9ANQmEClbfVVhlXhozSujxyN4JGg6F6/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-anna": "https://docs.google.com/document/d/1U32yGsydwQEUzEVDZBeP-KbBrUPntYSV/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-aaugusto": "https://docs.google.com/document/d/1fpRJyezD0jfpHet3P8jMjJLGZIzXW0kE/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-esther": "https://docs.google.com/document/d/1K47DZlmvjBY3UIfVUA_OHbVOA4g04uGW/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-gtl": "https://docs.google.com/document/d/10RF2X2w96-rg_yueccMqM_s1iL5WfS8V/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "etec": "https://docs.google.com/document/d/1hSZZYesYoJO6f6dr7ZPVFbm3omO9YznG/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
-    },
-    "semana2": {
-        "active": true,
-        "creche-m-verde": "https://docs.google.com/document/d/16GuYGAFeQQbY7LC_RZi7aVWj8JI3XkmR/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "creches": "https://docs.google.com/document/d/1MAGtMAzltep2JQZOCmWHU4HZExKcOC4E/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-braga": "https://docs.google.com/document/d/137M-n8LoIobJ9kgaMPB--N2o-VuplUAp/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-anna": "https://docs.google.com/document/d/1PyngO-3nrsyJJTLf5FFd6--QUDGsPCSw/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-aaugusto": "https://docs.google.com/document/d/14oKicHFSWSpdzHSs4BQMMJp1NyTq4e-n/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-esther": "https://docs.google.com/document/d/18irg9PSruhVe5lVpVQSDkK9iB55-c7EC/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-gtl": "https://docs.google.com/document/d/15YlRUXMHpc_RaFrC1r-tGS8OXFHnrBOQ/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "etec": "https://docs.google.com/document/d/1vMpMHJoINp1L_b4Wkp5brMSN6ws03mTr/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
-    },
-    "semana3": {
-        "active": true,
-        "creche-m-verde": "https://docs.google.com/document/d/17zAPFdTvP38I9egxGwe4s_pQGYGVadm_/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "creches": "https://docs.google.com/document/d/1AK9cDvUznXAglaWxHx0jqIb-U7r4HC-t/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-braga": "https://docs.google.com/document/d/1aaqHayb5V1tx1kII5zQQiOBc_mxn6a34/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-anna": "https://docs.google.com/document/d/1WDo60G40yVNS0-FcZWud1DpFCnekQVuM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-aaugusto": "https://docs.google.com/document/d/1KjaXtA5Zp70J6D6dQBQg9IFZVgHRDACQ/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-esther": "https://docs.google.com/document/d/1HiE4YRz-94ZjIMCxxt7cGaNZXTVJfKay/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-gtl": "https://docs.google.com/document/d/1pbEv2P0A1ke6VpFd6er620HdCiDOtxZo/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "etec": "https://docs.google.com/document/d/18DVnkGI--URfNt2KjzdIpado24UKowcZ/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
-    },
-    "semana4": {
-        "active": true,
-        "creche-m-verde": "https://docs.google.com/document/d/1ggy2QDvDUFTES8Gcniz5WuBDQq33hyEi/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "creches": "https://docs.google.com/document/d/1FimhcjlAxGRGXg84x_rzNRZZXifANUUy/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-braga": "https://docs.google.com/document/d/1x2OuVYXssgMUtkfO4gKLMiPW227OJ_qM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-anna": "https://docs.google.com/document/d/1WF9ImPxmXmFzuY19fWbbL0C0rnHJILTw/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-aaugusto": "https://docs.google.com/document/d/1bxfnGYZC-cHoZR6dNLz81ePOtL7zxBe-/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-esther": "https://docs.google.com/document/d/1XUAsRcF0Wf0RkLuu2SH4gq30iGtBN95N/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "fundamental-gtl": "https://docs.google.com/document/d/1EnVPJMJjT-FjVHYOv0AuEQ7YNFZwx3Ha/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-        "etec": "https://docs.google.com/document/d/1atnaSGrRUTHrBSJYTlpLztYXA6mvmwmk/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
+    "2026":
+     {
+    
+        "fevereiro": [
+            {
+                "weekId": "semana1-fev",
+                "title": "1ª SEM. - 02/02 a 06/02",
+                "startDate": "2026-02-02",
+                "endDate": "2026-02-06",
+                "active": true,
+                "links": 
+                {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "https://docs.google.com/document/d/1K2A9rHXFxio11F2_Lb6zmstl1CH-oqAQ/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "https://docs.google.com/document/d/1Si1kZQzClISgrzsp4hE1ow-YlS8kkN-e/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-fev",
+                "title": "2ª SEM. - 09/02 a 13/02",
+                "startDate": "2026-02-09",
+                "endDate": "2026-02-13",
+                "active": true,
+                "links":
+                 {
+                    "creche-m-verde": "https://docs.google.com/document/d/1BAcU1xgrX5RH6UQ_7LXfThAAUOz9LNXc/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "creches": "https://docs.google.com/document/d/1K1k_3hwMtVCpesFZDixtPs9YMbHZryPU/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            }
+        ]
     }
 }
