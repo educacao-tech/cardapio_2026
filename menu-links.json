@@ -54,7 +54,25 @@
                     "fundamental-aaugusto": "https://docs.google.com/document/d/1O7c5N6JylcDz7FfibmAiMfzS2_vePiWn/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-esther": "https://docs.google.com/document/d/1wCWD0cBxazncbSgpFfXsoQf7qrRYVC_r/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-gtl": "https://docs.google.com/document/d/19em4-Ynl_76AGRHRk9HDjLj4AzXMvPem/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-                    "etec": "#https://docs.google.com/document/d/1NgfEqf5jsilKPRvkFr1g_FeOROEtkEsd/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
+                    "etec": "https://docs.google.com/document/d/1iNIqz4ka11aDNpwm-9o_W36py71osXoQ/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
+                }
+            },
+            {
+                "weekId": "semana4-fev",
+                "title": "4ª SEM. - 23/02 a 27/02",
+                "startDate": "2026-02-23",
+                "endDate": "2026-02-27",
+                "active": true,
+                "links":
+                 {
+                    "creche-m-verde": "https://docs.google.com/document/d/12X5anlmwGgYu9BuL8ESQRjro4FscQzwz/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "creches": "https://docs.google.com/document/d/13iY5xpUbyhF75mhW752Hb8wDm1uiJjn1/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-braga": "https://docs.google.com/document/d/1wL8Uq5AUcuzA-tcy1IA0XpstpLuJX0t2/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-anna": "https://docs.google.com/document/d/1ohSx3NUVPcVpxhfzzbB3m7nOLqcpRw2b/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-aaugusto": "https://docs.google.com/document/d/1W9QrooY22Fopfm6Dr7t5jf57qJNYbbjN/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-esther": "https://docs.google.com/document/d/1xOqH6Pvy76xJEbxKV8Ln4LujXtUhpVRM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-gtl": "https://docs.google.com/document/d/1iZm3dfbWUJI-yzUdu-3JXj2fojLX5xcc/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "etec": "https://docs.google.com/document/d/1Do3kDfqA_OVEzhZDpNdMDLgfZ6f8LBnP/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
                 }
             }
         ]
