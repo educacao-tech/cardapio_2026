@@ -31,7 +31,7 @@
                  {
                     "creche-m-verde": "https://docs.google.com/document/d/1BAcU1xgrX5RH6UQ_7LXfThAAUOz9LNXc/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "creches": "https://docs.google.com/document/d/1K1k_3hwMtVCpesFZDixtPs9YMbHZryPU/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
-                    "fundamental-braga": "https://docs.google.com/document/d/15PJlVoFPfCl0TrAnJS0BcsELxMZA3bpM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=truehttps://docs.google.com/document/d/15PJlVoFPfCl0TrAnJS0BcsELxMZA3bpM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
+                    "fundamental-braga": "https://docs.google.com/document/d/15PJlVoFPfCl0TrAnJS0BcsELxMZA3bpM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-anna": "https://docs.google.com/document/d/1oHIsWlreSoBo4CO7JJ95pIpx_Cd_5Uyh/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-aaugusto": "https://docs.google.com/document/d/1y1OMr-LujhnL00J3T_DPoaEmgfMAsibT/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-esther": "https://docs.google.com/document/d/1NjOxHHOEFqD_QJAwwnr2ou_UKjBrmAes/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
@@ -73,6 +73,93 @@
                     "fundamental-esther": "https://docs.google.com/document/d/1xOqH6Pvy76xJEbxKV8Ln4LujXtUhpVRM/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "fundamental-gtl": "https://docs.google.com/document/d/1iZm3dfbWUJI-yzUdu-3JXj2fojLX5xcc/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true",
                     "etec": "https://docs.google.com/document/d/1Do3kDfqA_OVEzhZDpNdMDLgfZ6f8LBnP/edit?usp=sharing&ouid=116154735950320601146&rtpof=true&sd=true"
+                }
+            }
+        ],
+        "março": [
+            {
+                "weekId": "semana1-mar",
+                "title": "1ª SEM. - 02/03 a 06/03",
+                "startDate": "2026-03-02",
+                "endDate": "2026-03-06",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-mar",
+                "title": "2ª SEM. - 09/03 a 13/03",
+                "startDate": "2026-03-09",
+                "endDate": "2026-03-13",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana3-mar",
+                "title": "3ª SEM. - 16/03 a 20/03",
+                "startDate": "2026-03-16",
+                "endDate": "2026-03-20",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana4-mar",
+                "title": "4ª SEM. - 23/03 a 27/03",
+                "startDate": "2026-03-23",
+                "endDate": "2026-03-27",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana5-mar",
+                "title": "5ª SEM. - 30/03 a 03/04",
+                "startDate": "2026-03-30",
+                "endDate": "2026-04-03",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
                 }
             }
         ]

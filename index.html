@@ -26,12 +26,28 @@
     <main class="main-container">
         <div class="columns-container">
 
+            <div id="loading-spinner" class="spinner"></div>
             <div id="no-weeks-message" class="message-box" style="display: none;">
                 <h2>Nenhum cardápio disponível no momento.</h2>
                 <p>Por favor, volte mais tarde para conferir as novidades.</p>
             </div>
 
         </div>
+
+        <!-- Template para os cards da semana -->
+        <template id="week-card-template">
+            <section class="button-column">
+                <h2 class="column-title"></h2>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" aria-label="Cardápio da Creche Municipal Verde" title="Ver cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" aria-label="Cardápio das demais Creches" title="Ver cardápio das demais Creches">CRECHES</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA, PADRE</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, M. Ap., Faggioni, Braguetto">ANNA, ANSELMO, M.AP., FAGGIONI, BRAGUETTO</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, M. Virgínia">A.AUGUSTO, PORTINARI, M.VIRGÍNIA</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO, WASHINGTON</a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" aria-label="Cardápio da ETEC" title="Ver cardápio da ETEC">ETEC</a>
+            </section>
+        </template>
     </main>
 
     <button id="back-to-top" title="Voltar ao topo">↑</button>
@@ -41,8 +57,6 @@
     </footer>
 
     <script src="script.js" defer></script>
-    <!-- Script para atualizar o ano do copyright dinamicamente -->
-    <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
 </body>
 
 </html>

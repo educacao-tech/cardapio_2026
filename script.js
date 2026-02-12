@@ -1,34 +1,43 @@
 /**
+ * Valida se uma string é uma URL bem-formada.
+ * @param {string} string - A string a ser validada.
+ * @returns {boolean} - True se a URL for válida, false caso contrário.
+ */
+function isValidUrl(string) {
+    if (!string || string === '#') return false;
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        console.warn(`URL inválida detectada e ignorada: ${string}`);
+        return false;
+    }
+}
+
+/**
  * Cria o HTML para um único card de semana.
  * @param {object} weekData - O objeto de dados para uma semana.
  * @returns {HTMLElement} O elemento <section> do card da semana.
  */
 function createWeekCard(weekData) {
-    const section = document.createElement('section');
-    section.className = 'button-column';
+    const template = document.getElementById('week-card-template');
+    const section = template.content.cloneNode(true).firstElementChild;
     section.id = weekData.weekId;
 
+    const titleElement = section.querySelector('.column-title');
     const startDateDisplay = weekData.title.match(/\d{2}\/\d{2}/g)[0];
     const endDateDisplay = weekData.title.match(/\d{2}\/\d{2}/g)[1];
 
-    section.innerHTML = `
-        <h2 class="column-title">${weekData.title.replace(startDateDisplay, `<time datetime="${weekData.startDate}">${startDateDisplay}</time>`).replace(endDateDisplay, `<time datetime="${weekData.endDate}">${endDateDisplay}</time>`)}</h2>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" aria-label="Cardápio da Creche Municipal Verde" title="Ver cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" aria-label="Cardápio das demais Creches" title="Ver cardápio das demais Creches">CRECHES</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA, PADRE</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, M. Ap., Faggioni, Braguetto">ANNA, ANSELMO, M.AP., FAGGIONI, BRAGUETTO</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, M. Virgínia">A.AUGUSTO, PORTINARI, M.VIRGÍNIA</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO, WASHINGTON</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" aria-label="Cardápio da ETEC" title="Ver cardápio da ETEC">ETEC</a>
-    `;
+    titleElement.innerHTML = weekData.title
+        .replace(startDateDisplay, `<time datetime="${weekData.startDate}">${startDateDisplay}</time>`)
+        .replace(endDateDisplay, `<time datetime="${weekData.endDate}">${endDateDisplay}</time>`);
 
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
-        const buttonTypeClass = Array.from(button.classList).find(cls => weekData.links[cls] !== undefined);
-        const link = buttonTypeClass ? weekData.links[buttonTypeClass] : '';
+        const linkKey = Array.from(button.classList).find(cls => weekData.links[cls] !== undefined);
+        const link = linkKey ? weekData.links[linkKey] : null;
 
-        if (link && link !== '#') {
+        if (isValidUrl(link)) {
             button.href = link;
         } else {
             button.classList.add('disabled');
@@ -138,11 +147,8 @@ function initializeStaticFeatures() {
     const backToTopButton = document.getElementById("back-to-top");
     if (backToTopButton) {
         const scrollFunction = () => {
-            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-                backToTopButton.classList.add("show");
-            } else {
-                backToTopButton.classList.remove("show");
-            }
+            const shouldShow = document.body.scrollTop > 200 || document.documentElement.scrollTop > 200;
+            backToTopButton.classList.toggle("show", shouldShow);
         };
         window.addEventListener("scroll", scrollFunction, { passive: true });
         backToTopButton.addEventListener('click', () => {
@@ -174,6 +180,10 @@ function initializeStaticFeatures() {
 
     if (themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
     loadTheme();
+
+    // Atualiza o ano no rodapé
+    const yearElement = document.getElementById('current-year');
+    if (yearElement) yearElement.textContent = new Date().getFullYear();
 }
 
 /**
@@ -181,6 +191,7 @@ function initializeStaticFeatures() {
  */
 async function loadMenuData() {
     initializeStaticFeatures();
+    const spinner = document.getElementById('loading-spinner');
     try {
         const response = await fetch('menu-links.json');
         if (!response.ok) {
@@ -192,6 +203,8 @@ async function loadMenuData() {
         console.error("Não foi possível carregar os links dos cardápios:", error);
         const messageBox = document.getElementById('no-weeks-message');
         if (messageBox) messageBox.style.display = 'block';
+    } finally {
+        if (spinner) spinner.style.display = 'none';
     }
 }
 
