@@ -109,10 +109,13 @@ function buildAnnualMenu(menuData) {
                 if (today >= startDate && today <= endDate) {
                     weekCard.classList.add('current-week');
                     weekCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else if (today > endDate) {
-                    weekCard.classList.add('past-week');
+                    weeksContainer.prepend(weekCard);
+                } else {
+                    if (today > endDate) {
+                        weekCard.classList.add('past-week');
+                    }
+                    weeksContainer.appendChild(weekCard);
                 }
-                weeksContainer.appendChild(weekCard);
             });
 
             if (weeksInMonth > 0) {
