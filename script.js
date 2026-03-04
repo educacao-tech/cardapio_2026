@@ -34,7 +34,7 @@ function createWeekCard(weekData) {
 
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
-        const linkKey = Array.from(button.classList).find(cls => weekData.links[cls] !== undefined);
+        const linkKey = button.dataset.linkKey;
         const link = linkKey ? weekData.links[linkKey] : null;
 
         if (isValidUrl(link)) {
@@ -56,6 +56,7 @@ function buildAnnualMenu(menuData) {
     if (!mainContainer) return;
 
     mainContainer.innerHTML = ''; // Limpa o conteúdo estático
+    const fragment = document.createDocumentFragment();
 
     const today = new Date(new Date().setUTCHours(0, 0, 0, 0));
     const currentYear = today.getFullYear().toString();
@@ -120,7 +121,7 @@ function buildAnnualMenu(menuData) {
 
             if (weeksInMonth > 0) {
                 monthWrapper.appendChild(weeksContainer);
-                mainContainer.appendChild(monthWrapper);
+                fragment.appendChild(monthWrapper);
             }
         }
     }
@@ -129,6 +130,8 @@ function buildAnnualMenu(menuData) {
         const messageBox = document.getElementById('no-weeks-message');
         if (messageBox) messageBox.style.display = 'block';
     }
+
+    mainContainer.appendChild(fragment);
 
     // Inicializa animações para os cards recém-adicionados
     const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };

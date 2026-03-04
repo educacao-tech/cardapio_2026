@@ -272,26 +272,26 @@
         box-shadow: 0 0 12px var(--highlight-shadow-color);
         transform: scale(1.02);
         background-color: var(--highlight-background-color);
+    }
 
-        .column-title::before {
-            content: '🗓️ ';
-            margin-inline-end: 8px;
-        }
+    .current-week .column-title::before {
+        content: '🗓️ ';
+        margin-inline-end: 8px;
     }
 
     .past-week {
         opacity: 0.65;
         filter: grayscale(80%);
+    }
 
-        &:hover {
-            opacity: 1;
-            filter: grayscale(0%);
-        }
+    .past-week:hover {
+        opacity: 1;
+        filter: grayscale(0%);
+    }
 
-        .column-title::before {
-            content: '✅ ';
-            margin-inline-end: 5px;
-        }
+    .past-week .column-title::before {
+        content: '✅ ';
+        margin-inline-end: 5px;
     }
 
     /* Botão "Voltar ao Topo" */
@@ -315,14 +315,14 @@
         transition: opacity 0.3s, visibility 0.3s;
         align-items: center;
         justify-content: center;
+    }
 
-        &:hover {
-            background-color: var(--primary-color-dark);
-        }
+    #back-to-top:hover {
+        background-color: var(--primary-color-dark);
+    }
 
-        &.show {
-            display: flex;
-        }
+    #back-to-top.show {
+        display: flex;
     }
 
     /* Estilos do Seletor de Tema */
@@ -338,10 +338,10 @@
         justify-content: center;
         align-items: center;
         transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+    }
 
-        &:hover {
-            background-color: var(--background-color);
-        }
+    #theme-toggle:hover {
+        background-color: var(--background-color);
     }
 }
 
