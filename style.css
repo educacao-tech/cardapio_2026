@@ -11,7 +11,7 @@
     --text-color: #212529;
     --text-color-muted: #6c757d;
     --white: #ffffff;
-    --shadow-color: rgba(0, 0, 0, 0.05);
+    --shadow-color: rgba(0, 0, 0, 0.08);
     --focus-ring-color: rgba(0, 123, 255, 0.5);
     --highlight-background-color: #e6f7ff;
     --highlight-shadow-color: rgba(0, 86, 179, 0.5);
@@ -34,7 +34,7 @@
     --background-color: #121212;
     --surface-color: #1e1e1e;
     --text-color: #e0e0e0;
-    --text-color-muted: #888;
+    --text-color-muted: #a0a0a0;
     --shadow-color: rgba(0, 0, 0, 0.2);
     --focus-ring-color: rgba(62, 173, 255, 0.6);
     --highlight-background-color: rgba(62, 173, 255, 0.1);
@@ -55,9 +55,13 @@
 
     /* Estilos Base */
     body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
         line-height: 1.6;
         margin: 0;
+        /* Adiciona um padrão sutil de fundo */
+        background-image: radial-gradient(var(--medium-gray) 0.5px, transparent 0.5px);
+        background-size: 24px 24px;
+        background-attachment: fixed;
         background-color: var(--background-color);
         color: var(--text-color);
     }
@@ -78,13 +82,22 @@
 }
 
 @layer layout {
+    /* Suaviza a transição entre temas */
+    html {
+        transition: background-color 0.3s ease;
+    }
 
     /* Cabeçalho */
     .main-header {
         background-color: var(--surface-color);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         padding-block: 1rem;
         padding-inline: 2rem;
         border-block-end: 1px solid var(--medium-gray);
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }
 
     .header-content {
@@ -111,6 +124,48 @@
         font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
     }
 
+    /* Seletor de Meses */
+    .month-selector {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        padding: 0.75rem;
+        background-color: var(--surface-color);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px var(--shadow-color);
+        position: sticky;
+        top: 80px; /* Ajustado para ficar logo abaixo do header fixo */
+        z-index: 90;
+        scrollbar-width: none; /* Firefox */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .month-selector::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .month-nav-btn {
+        background-color: var(--background-color);
+        border: 1px solid var(--medium-gray);
+        color: var(--text-color);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .month-nav-btn.active {
+        background-color: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
     /* Conteúdo Principal */
     .main-container {
         max-width: 1600px;
@@ -121,22 +176,25 @@
     .month-wrapper {
         width: 100%;
         margin-bottom: 3rem;
+        /* Prepara para animação de entrada */
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    .month-title {
-        font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
-        color: var(--primary-color);
-        text-align: center;
-        margin-bottom: 2rem;
-        text-transform: capitalize;
+    /* Esconde os meses não selecionados */
+    .month-wrapper.is-hidden {
+        display: none;
+        opacity: 0;
+        transform: translateY(10px);
     }
 
 
     .columns-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 2rem;
+        align-items: start;
     }
 
     /* Rodapé */
@@ -162,12 +220,11 @@
         background-color: var(--surface-color);
         padding: 1.5rem;
         border-radius: 12px;
-        box-shadow: 0 4px 8px var(--shadow-color);
+        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        flex: 0 1 340px;
-        /* Não cresce, pode encolher, com uma largura base de 340px */
+        border: 1px solid var(--medium-gray);
         max-width: 100%;
         /* Animação de entrada */
         opacity: 0;
@@ -211,14 +268,14 @@
         padding: 0.7rem;
         border-radius: 8px;
         text-align: center;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: background-color 0.2s, transform 0.2s, filter 0.2s;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid transparent;
     }
 
     .button:hover {
-        transform: translateY(-2px);
+        transform: translateY(-3px) scale(1.02);
         filter: brightness(1.1);
     }
 
@@ -268,15 +325,16 @@
 
     /* Destaque de Semanas */
     .current-week {
-        border: 2px solid var(--primary-color);
-        box-shadow: 0 0 12px var(--highlight-shadow-color);
-        transform: scale(1.02);
+        border: 2px solid var(--primary-color) !important;
+        box-shadow: 0 20px 25px -5px var(--highlight-shadow-color);
+        transform: scale(1.03) !important;
         background-color: var(--highlight-background-color);
+        z-index: 10;
     }
 
     .current-week .column-title::before {
         content: '🗓️ ';
-        margin-inline-end: 8px;
+        filter: drop-shadow(0 0 2px var(--primary-color));
     }
 
     .past-week {

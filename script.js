@@ -1,4 +1,12 @@
 /**
+ * Configurações e Constantes Globais
+ */
+const MONTH_ORDER = {
+    "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5,
+    "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11
+};
+
+/**
  * Valida se uma string é uma URL bem-formada.
  * @param {string} string - A string a ser validada.
  * @returns {boolean} - True se a URL for válida, false caso contrário.
@@ -48,6 +56,43 @@ function createWeekCard(weekData) {
 }
 
 /**
+ * Alterna a visibilidade para mostrar apenas o mês selecionado.
+ * @param {string} monthName - Nome do mês a ser exibido.
+ */
+function showMonth(monthName) {
+    const monthId = `month-${monthName.toLowerCase()}`;
+    const allWrappers = document.querySelectorAll('.month-wrapper');
+    
+    allWrappers.forEach(wrapper => {
+        wrapper.classList.toggle('is-hidden', wrapper.id !== monthId);
+    });
+
+    document.querySelectorAll('.month-nav-btn').forEach(btn => {
+        const isActive = btn.textContent.toLowerCase() === monthName.toLowerCase();
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-current', isActive ? 'page' : 'false');
+    });
+}
+
+/**
+ * Renderiza o seletor de meses no topo da página.
+ * @param {string[]} months - Lista de nomes de meses ativos.
+ */
+function renderMonthSelector(months) {
+    const selector = document.getElementById('month-selector');
+    if (!selector || months.length === 0) return;
+
+    selector.innerHTML = '';
+    months.forEach(month => {
+        const btn = document.createElement('button');
+        btn.className = 'month-nav-btn';
+        btn.textContent = month;
+        btn.onclick = () => showMonth(month);
+        selector.appendChild(btn);
+    });
+}
+
+/**
  * Constrói a visualização anual do menu a partir dos dados.
  * @param {object} menuData - Os dados completos do menu do arquivo JSON.
  */
@@ -61,37 +106,22 @@ function buildAnnualMenu(menuData) {
     const today = new Date(new Date().setUTCHours(0, 0, 0, 0));
     const currentYear = today.getFullYear().toString();
     const yearData = menuData[currentYear];
-    const currentMonthIndex = today.getUTCMonth();
-
-    // Mapeamento para ordenar e filtrar os meses (0 = Janeiro, 11 = Dezembro)
-    const monthOrder = {
-        "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5,
-        "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11
-    };
+    const currentMonthIndex = today.getUTCMonth();    
+    const activeMonthNames = [];
 
     let totalActiveWeeks = 0;
 
     if (yearData) {
         // Ordena os meses cronologicamente antes de iterar
-        const sortedMonths = Object.keys(yearData).sort((a, b) => {
-            return (monthOrder[a.toLowerCase()] || 0) - (monthOrder[b.toLowerCase()] || 0);
-        });
+        const sortedMonths = Object.keys(yearData).sort((a, b) => (MONTH_ORDER[a.toLowerCase()] || 0) - (MONTH_ORDER[b.toLowerCase()] || 0));
 
         for (const monthName of sortedMonths) {
-            const monthIndex = monthOrder[monthName.toLowerCase()];
-
-            // Filtra: Começa em Fevereiro (1) E esconde meses que já passaram
-            // Se estivermos em Março (2), esconde Fev (1). Se estivermos em Jan (0), esconde Jan mas mostra Fev.
-            if (monthIndex < 1 || monthIndex < currentMonthIndex) continue;
+            const monthIndex = MONTH_ORDER[monthName.toLowerCase()];
 
             const monthData = yearData[monthName];
             const monthWrapper = document.createElement('div');
             monthWrapper.className = 'month-wrapper';
-
-            const monthTitle = document.createElement('h2');
-            monthTitle.className = 'month-title';
-            monthTitle.textContent = monthName;
-            monthWrapper.appendChild(monthTitle);
+            monthWrapper.id = `month-${monthName.toLowerCase()}`;
 
             const weeksContainer = document.createElement('div');
             weeksContainer.className = 'columns-container';
@@ -109,7 +139,6 @@ function buildAnnualMenu(menuData) {
 
                 if (today >= startDate && today <= endDate) {
                     weekCard.classList.add('current-week');
-                    weekCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     weeksContainer.prepend(weekCard);
                 } else {
                     if (today > endDate) {
@@ -122,9 +151,12 @@ function buildAnnualMenu(menuData) {
             if (weeksInMonth > 0) {
                 monthWrapper.appendChild(weeksContainer);
                 fragment.appendChild(monthWrapper);
+                activeMonthNames.push(monthName.toLowerCase());
             }
         }
     }
+
+    renderMonthSelector(activeMonthNames);
 
     if (totalActiveWeeks === 0) {
         const messageBox = document.getElementById('no-weeks-message');
@@ -132,6 +164,23 @@ function buildAnnualMenu(menuData) {
     }
 
     mainContainer.appendChild(fragment);
+
+    // Adiciona uma pequena animação de entrada ao container principal
+    mainContainer.style.opacity = '0';
+    requestAnimationFrame(() => {
+        mainContainer.style.transition = 'opacity 0.5s ease';
+        mainContainer.style.opacity = '1';
+    });
+
+    // Define o mês inicial a ser exibido
+    const currentMonthName = Object.keys(MONTH_ORDER).find(key => MONTH_ORDER[key] === currentMonthIndex);
+    
+    // Se o mês atual tiver dados, mostra ele; caso contrário, mostra o primeiro mês disponível
+    const monthToShow = activeMonthNames.includes(currentMonthName) 
+        ? currentMonthName 
+        : activeMonthNames[0];
+
+    if (monthToShow) showMonth(monthToShow);
 
     // Inicializa animações para os cards recém-adicionados
     const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
