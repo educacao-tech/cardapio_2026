@@ -24,10 +24,24 @@
     </header>
 
     <main class="main-container">
-        <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
-        <div class="columns-container">
+        <div class="controls-wrapper">
+            <div class="search-container">
+                <input type="text" id="school-search" placeholder="🔍 Buscar sua escola..." aria-label="Filtrar escolas">
+                <button id="clear-search" title="Limpar busca" aria-label="Limpar busca">✕</button>
+            </div>
+            <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
+        </div>
 
-            <div id="loading-spinner" class="spinner"></div>
+        <div class="columns-container">
+            <div id="loading-skeleton" class="skeleton-wrapper">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
+            <div id="search-no-results" class="message-box" style="display: none;">
+                <h2>Nenhuma escola encontrada.</h2>
+                <p>Verifique o nome digitado ou tente outro termo.</p>
+            </div>
             <div id="no-weeks-message" class="message-box" style="display: none;">
                 <h2>Nenhum cardápio disponível no momento.</h2>
                 <p>Por favor, volte mais tarde para conferir as novidades.</p>
@@ -39,14 +53,23 @@
         <template id="week-card-template">
             <section class="button-column">
                 <h2 class="column-title"></h2>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" data-link-key="creche-m-verde" aria-label="Cardápio da Creche Municipal Verde" title="Ver cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches" aria-label="Cardápio das demais Creches" title="Ver cardápio das demais Creches">CRECHES</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" data-link-key="fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA, PADRE</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" data-link-key="fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, M. Ap., Faggioni, Braguetto">ANNA, ANSELMO, M.AP., FAGGIONI, BRAGUETTO</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" data-link-key="fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, M. Virgínia">A.AUGUSTO, PORTINARI, M.VIRGÍNIA</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO, WASHINGTON</a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec" aria-label="Cardápio da ETEC" title="Ver cardápio da ETEC">ETEC</a>
+                
+                <div class="button-group">
+                    <span class="group-label">Infantil / Creches</span>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" data-link-key="creche-m-verde" title="Ver cardápio da Creche Municipal Verde" aria-label="Cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches" title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">CRECHES</a>
+                </div>
+
+                <div class="button-group">
+                    <span class="group-label">Ensino Fundamental</span>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" data-link-key="fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA e PADRE</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" data-link-key="fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">ANNA, ANSELMO, M. AP., FAGGIONI, BRAGUETTO</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" data-link-key="fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">A. AUGUSTO, PORTINARI e M. VIRGÍNIA</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO e WASHINGTON</a>
+                </div>
+                
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec" title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">ETEC / MÉDIO</a>
             </section>
         </template>
     </main>

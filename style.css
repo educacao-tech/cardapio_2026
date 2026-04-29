@@ -124,6 +124,20 @@
         font-size: clamp(1.75rem, 1.25rem + 2vw, 2.5rem);
     }
 
+    .controls-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        position: sticky;
+        top: 80px;
+        z-index: 95;
+        background-color: var(--background-color);
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+    }
+
     /* Seletor de Meses */
     .month-selector {
         display: flex;
@@ -131,16 +145,56 @@
         overflow-x: auto;
         justify-content: flex-start;
         gap: 0.5rem;
-        margin-bottom: 2rem;
-        padding: 0.75rem;
+        padding: 0.25rem;
+        flex: 1;
+        min-width: 0; /* Importante para permitir o scroll horizontal dentro do flex */
         background-color: var(--surface-color);
         border-radius: 12px;
-        box-shadow: 0 4px 6px -1px var(--shadow-color);
-        position: sticky;
-        top: 80px; /* Ajustado para ficar logo abaixo do header fixo */
-        z-index: 90;
         scrollbar-width: none; /* Firefox */
         -webkit-overflow-scrolling: touch;
+    }
+
+    /* Barra de Busca */
+    .search-container {
+        flex: 0 0 300px; /* Largura fixa para a busca */
+        margin: 0;
+        position: relative;
+    }
+
+    #school-search {
+        width: 100%;
+        padding: 0.8rem 2.5rem 0.8rem 1.2rem;
+        border-radius: 25px;
+        border: 2px solid var(--medium-gray);
+        background-color: var(--surface-color);
+        color: var(--text-color);
+        font-size: 0.9rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #school-search:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--focus-ring-color);
+    }
+
+    #clear-search {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-color-muted);
+        cursor: pointer;
+        font-size: 1.1rem;
+        display: none; /* Oculto por padrão, exibido via JS */
+        padding: 5px;
+        transition: color 0.2s;
+    }
+
+    #clear-search:hover {
+        color: var(--text-color);
     }
 
     .month-selector::-webkit-scrollbar {
@@ -230,6 +284,26 @@
         opacity: 0;
         transform: translateY(20px);
         transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .button-column:hover {
+        box-shadow: 0 20px 25px -5px var(--shadow-color);
+    }
+
+    /* Badge para a semana atual */
+    .week-badge {
+        position: absolute;
+        top: 10px;
+        right: -30px;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 5px 35px;
+        font-size: 0.65rem;
+        font-weight: bold;
+        transform: rotate(45deg);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     .column-title {
@@ -241,6 +315,25 @@
         text-align: center;
         border-block-end: 2px solid var(--background-color);
         padding-block-end: 0.75rem;
+    }
+
+    /* Agrupamento de botões */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background-color: rgba(0,0,0,0.02);
+        border-radius: 8px;
+        border: 1px solid var(--medium-gray);
+    }
+
+    .group-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-color-muted);
+        letter-spacing: 0.05em;
     }
 
     /* Classe para ativar a animação quando o elemento está visível */
@@ -332,11 +425,6 @@
         z-index: 10;
     }
 
-    .current-week .column-title::before {
-        content: '🗓️ ';
-        filter: drop-shadow(0 0 2px var(--primary-color));
-    }
-
     .past-week {
         opacity: 0.65;
         filter: grayscale(80%);
@@ -405,6 +493,16 @@
 
 /* Media Queries para Responsividade */
 @media (max-width: 768px) {
+    .controls-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        top: 70px;
+    }
+
+    .search-container {
+        flex: none;
+    }
+
     .main-header {
         padding-inline: 1rem;
     }
@@ -435,15 +533,32 @@
     color: var(--text-color-muted);
 }
 
-/* Spinner de Carregamento */
-.spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border-left-color: var(--primary-color);
-    animation: spin 1s linear infinite;
-    margin: 3rem auto;
+/* Skeleton Loading */
+.skeleton-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    width: 100%;
 }
 
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.skeleton-card {
+    height: 400px;
+    background: linear-gradient(90deg, var(--surface-color) 25%, var(--medium-gray) 50%, var(--surface-color) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 12px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Esconder botões filtrados */
+.button.filtered-out {
+    display: none;
+}
+
+.button-group.empty-group {
+    display: none;
+}

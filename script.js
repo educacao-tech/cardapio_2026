@@ -25,9 +25,10 @@ function isValidUrl(string) {
 /**
  * Cria o HTML para um único card de semana.
  * @param {object} weekData - O objeto de dados para uma semana.
+ * @param {boolean} isCurrent - Se esta é a semana atual.
  * @returns {HTMLElement} O elemento <section> do card da semana.
  */
-function createWeekCard(weekData) {
+function createWeekCard(weekData, isCurrent = false) {
     const template = document.getElementById('week-card-template');
     const section = template.content.cloneNode(true).firstElementChild;
     section.id = weekData.weekId;
@@ -39,6 +40,13 @@ function createWeekCard(weekData) {
     titleElement.innerHTML = weekData.title
         .replace(startDateDisplay, `<time datetime="${weekData.startDate}">${startDateDisplay}</time>`)
         .replace(endDateDisplay, `<time datetime="${weekData.endDate}">${endDateDisplay}</time>`);
+
+    if (isCurrent) {
+        const badge = document.createElement('div');
+        badge.className = 'week-badge';
+        badge.textContent = 'ATUAL';
+        section.appendChild(badge);
+    }
 
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
@@ -133,11 +141,13 @@ function buildAnnualMenu(menuData) {
                 weeksInMonth++;
                 totalActiveWeeks++;
 
-                const weekCard = createWeekCard(weekData);
                 const startDate = new Date(`${weekData.startDate}T00:00:00Z`);
                 const endDate = new Date(`${weekData.endDate}T23:59:59Z`);
+                const isCurrent = today >= startDate && today <= endDate;
 
-                if (today >= startDate && today <= endDate) {
+                const weekCard = createWeekCard(weekData, isCurrent);
+
+                if (isCurrent) {
                     weekCard.classList.add('current-week');
                     weeksContainer.prepend(weekCard);
                 } else {
@@ -181,6 +191,52 @@ function buildAnnualMenu(menuData) {
         : activeMonthNames[0];
 
     if (monthToShow) showMonth(monthToShow);
+
+    // Implementação da Busca/Filtro
+    const searchInput = document.getElementById('school-search');
+    const clearBtn = document.getElementById('clear-search');
+    const noResultsMsg = document.getElementById('search-no-results');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const allButtons = document.querySelectorAll('.button-column .button');
+            let hasVisibleCards = false;
+
+            if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
+            
+            allButtons.forEach(btn => {
+                const text = btn.textContent.toLowerCase();
+                const label = btn.getAttribute('aria-label')?.toLowerCase() || '';
+                const isMatch = text.includes(term) || label.includes(term);
+                btn.classList.toggle('filtered-out', !isMatch);
+            });
+
+            // Esconde grupos vazios
+            document.querySelectorAll('.button-group').forEach(group => {
+                const hasVisibleButtons = Array.from(group.querySelectorAll('.button'))
+                    .some(btn => !btn.classList.contains('filtered-out'));
+                group.classList.toggle('empty-group', !hasVisibleButtons);
+            });
+
+            // Garante que o card seja visível apenas se tiver algum botão correspondente
+            document.querySelectorAll('.button-column').forEach(card => {
+                const isVisible = card.querySelectorAll('.button:not(.filtered-out)').length > 0;
+                card.style.display = isVisible ? 'flex' : 'none';
+                if (isVisible) hasVisibleCards = true;
+            });
+
+            if (noResultsMsg) noResultsMsg.style.display = (!hasVisibleCards && term !== '') ? 'block' : 'none';
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+            });
+        }
+    }
 
     // Inicializa animações para os cards recém-adicionados
     const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
@@ -246,7 +302,7 @@ function initializeStaticFeatures() {
  */
 async function loadMenuData() {
     initializeStaticFeatures();
-    const spinner = document.getElementById('loading-spinner');
+    const skeleton = document.getElementById('loading-skeleton');
     try {
         const response = await fetch('menu-links.json');
         if (!response.ok) {
@@ -259,7 +315,7 @@ async function loadMenuData() {
         const messageBox = document.getElementById('no-weeks-message');
         if (messageBox) messageBox.style.display = 'block';
     } finally {
-        if (spinner) spinner.style.display = 'none';
+        if (skeleton) skeleton.style.display = 'none';
     }
 }
 
