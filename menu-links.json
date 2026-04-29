@@ -232,6 +232,76 @@
                     "etec": "https://drive.google.com/file/d/1h971quB9Zg4fPnyXyzgSbAYjJAkvmtVh/view?usp=sharing"
                 }
             }
+        ],
+        "maio": [
+            {
+                "weekId": "semana1-mai",
+                "title": "1ª SEM. - 04/05 a 08/05",
+                "startDate": "2026-05-04",
+                "endDate": "2026-05-08",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-mai",
+                "title": "2ª SEM. - 11/05 a 15/05",
+                "startDate": "2026-05-11",
+                "endDate": "2026-05-15",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana3-mai",
+                "title": "3ª SEM. - 18/05 a 22/05",
+                "startDate": "2026-05-18",
+                "endDate": "2026-05-22",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana4-mai",
+                "title": "4ª SEM. - 25/05 a 29/05",
+                "startDate": "2026-05-25",
+                "endDate": "2026-05-29",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            }
         ]
     }
 }
