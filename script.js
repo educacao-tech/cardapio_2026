@@ -50,7 +50,7 @@ function createWeekCard(weekData, isCurrent = false) {
 
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
-        const linkKey = button.dataset.linkKey;
+        const linkKey = button.dataset.linkKey; // linkKey pode ser undefined se o atributo não existir
         const link = linkKey ? weekData.links[linkKey] : null;
 
         if (isValidUrl(link)) {
@@ -67,19 +67,51 @@ function createWeekCard(weekData, isCurrent = false) {
  * Alterna a visibilidade para mostrar apenas o mês selecionado.
  * @param {string} monthName - Nome do mês a ser exibido.
  */
-function showMonth(monthName) {
+async function showMonth(monthName) {
     const monthId = `month-${monthName.toLowerCase()}`;
-    const allWrappers = document.querySelectorAll('.month-wrapper');
-    
-    allWrappers.forEach(wrapper => {
-        wrapper.classList.toggle('is-hidden', wrapper.id !== monthId);
-    });
+    const targetWrapper = document.getElementById(monthId);
+    const currentWrapper = document.querySelector('.month-wrapper:not(.is-hidden)');
+
+    if (currentWrapper === targetWrapper) return;
 
     document.querySelectorAll('.month-nav-btn').forEach(btn => {
         const isActive = btn.textContent.toLowerCase() === monthName.toLowerCase();
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
+
+    // Fase 1: Fade out do mês atual (se houver um)
+    if (currentWrapper) {
+        currentWrapper.style.opacity = '0';
+        currentWrapper.style.transform = 'translateY(-10px)';
+        
+        // Aguarda a transição de 0.4s definida no CSS
+        await new Promise(resolve => setTimeout(resolve, 400));
+        currentWrapper.classList.add('is-hidden');
+        
+        // Limpa estilos inline para não interferir no CSS base
+        currentWrapper.style.opacity = '';
+        currentWrapper.style.transform = '';
+    }
+
+    // Fase 2: Fade in do novo mês
+    if (targetWrapper) {
+        targetWrapper.style.opacity = '0';
+        targetWrapper.style.transform = 'translateY(10px)';
+        targetWrapper.classList.remove('is-hidden');
+
+        // Força reflow para o navegador aplicar a transição após remover display:none
+        targetWrapper.offsetHeight;
+
+        targetWrapper.style.opacity = '1';
+        targetWrapper.style.transform = 'translateY(0)';
+
+        // Limpa estilos inline após a animação terminar
+        setTimeout(() => {
+            targetWrapper.style.opacity = '';
+            targetWrapper.style.transform = '';
+        }, 400);
+    }
 }
 
 /**
@@ -105,7 +137,7 @@ function renderMonthSelector(months) {
  * @param {object} menuData - Os dados completos do menu do arquivo JSON.
  */
 function buildAnnualMenu(menuData) {
-    const mainContainer = document.querySelector('.main-container .columns-container');
+    const mainContainer = document.getElementById('week-cards-container'); // Alterado para o novo ID
     if (!mainContainer) return;
 
     mainContainer.innerHTML = ''; // Limpa o conteúdo estático
@@ -128,7 +160,7 @@ function buildAnnualMenu(menuData) {
 
             const monthData = yearData[monthName];
             const monthWrapper = document.createElement('div');
-            monthWrapper.className = 'month-wrapper';
+            monthWrapper.className = 'month-wrapper is-hidden';
             monthWrapper.id = `month-${monthName.toLowerCase()}`;
 
             const weeksContainer = document.createElement('div');
@@ -159,6 +191,11 @@ function buildAnnualMenu(menuData) {
             });
 
             if (weeksInMonth > 0) {
+                // Aplica o efeito cascata baseado na ordem visual dos cards
+                Array.from(weeksContainer.children).forEach((card, index) => {
+                    card.style.setProperty('--stagger-delay', `${index * 0.1}s`);
+                });
+
                 monthWrapper.appendChild(weeksContainer);
                 fragment.appendChild(monthWrapper);
                 activeMonthNames.push(monthName.toLowerCase());
@@ -186,9 +223,12 @@ function buildAnnualMenu(menuData) {
     const currentMonthName = Object.keys(MONTH_ORDER).find(key => MONTH_ORDER[key] === currentMonthIndex);
     
     // Se o mês atual tiver dados, mostra ele; caso contrário, mostra o primeiro mês disponível
-    const monthToShow = activeMonthNames.includes(currentMonthName) 
-        ? currentMonthName 
-        : activeMonthNames[0];
+    let monthToShow = null;
+    if (activeMonthNames.length > 0) {
+        monthToShow = activeMonthNames.includes(currentMonthName) 
+            ? currentMonthName 
+            : activeMonthNames[0];
+    }
 
     if (monthToShow) showMonth(monthToShow);
 
@@ -197,36 +237,42 @@ function buildAnnualMenu(menuData) {
     const clearBtn = document.getElementById('clear-search');
     const noResultsMsg = document.getElementById('search-no-results');
 
+    let searchTimeout;
+    const debounceDelay = 300; // ms
+
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const allButtons = document.querySelectorAll('.button-column .button');
-            let hasVisibleCards = false;
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const term = e.target.value.toLowerCase();
+                const allButtons = document.querySelectorAll('.button-column .button');
+                let hasVisibleCards = false;
 
-            if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
-            
-            allButtons.forEach(btn => {
-                const text = btn.textContent.toLowerCase();
-                const label = btn.getAttribute('aria-label')?.toLowerCase() || '';
-                const isMatch = text.includes(term) || label.includes(term);
-                btn.classList.toggle('filtered-out', !isMatch);
-            });
+                if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
+                
+                allButtons.forEach(btn => {
+                    const text = btn.textContent.toLowerCase();
+                    const label = btn.getAttribute('aria-label')?.toLowerCase() || '';
+                    const isMatch = text.includes(term) || label.includes(term);
+                    btn.classList.toggle('filtered-out', !isMatch);
+                });
 
-            // Esconde grupos vazios
-            document.querySelectorAll('.button-group').forEach(group => {
-                const hasVisibleButtons = Array.from(group.querySelectorAll('.button'))
-                    .some(btn => !btn.classList.contains('filtered-out'));
-                group.classList.toggle('empty-group', !hasVisibleButtons);
-            });
+                // Esconde grupos vazios
+                document.querySelectorAll('.button-group').forEach(group => {
+                    const hasVisibleButtons = Array.from(group.querySelectorAll('.button'))
+                        .some(btn => !btn.classList.contains('filtered-out'));
+                    group.classList.toggle('empty-group', !hasVisibleButtons);
+                });
 
-            // Garante que o card seja visível apenas se tiver algum botão correspondente
-            document.querySelectorAll('.button-column').forEach(card => {
-                const isVisible = card.querySelectorAll('.button:not(.filtered-out)').length > 0;
-                card.style.display = isVisible ? 'flex' : 'none';
-                if (isVisible) hasVisibleCards = true;
-            });
+                // Garante que o card seja visível apenas se tiver algum botão correspondente
+                document.querySelectorAll('.button-column').forEach(card => {
+                    const isVisible = card.querySelectorAll('.button:not(.filtered-out)').length > 0;
+                    card.style.display = isVisible ? 'flex' : 'none';
+                    if (isVisible) hasVisibleCards = true;
+                });
 
-            if (noResultsMsg) noResultsMsg.style.display = (!hasVisibleCards && term !== '') ? 'block' : 'none';
+                if (noResultsMsg) noResultsMsg.style.display = (!hasVisibleCards && term !== '') ? 'block' : 'none';
+            }, debounceDelay);
         });
 
         if (clearBtn) {
@@ -240,11 +286,14 @@ function buildAnnualMenu(menuData) {
 
     // Inicializa animações para os cards recém-adicionados
     const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
-    const observer = new IntersectionObserver((entries, observer) => {
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
+            } else {
+                // Remove a classe quando o elemento sai de vista (ou o mês é ocultado)
+                // Isso permite que a animação ocorra novamente ao reexibir o mês.
+                entry.target.classList.remove('visible');
             }
         });
     }, observerOptions);
@@ -303,6 +352,15 @@ function initializeStaticFeatures() {
 async function loadMenuData() {
     initializeStaticFeatures();
     const skeleton = document.getElementById('loading-skeleton');
+    const spinner = document.getElementById('loading-spinner');
+
+    if (spinner) {
+        spinner.style.display = 'flex';
+        spinner.offsetHeight; // Força o reflow para garantir que o fade-in ocorra
+        spinner.classList.remove('fade-out');
+    }
+
+    document.body.classList.add('no-scroll');
     try {
         const response = await fetch('menu-links.json');
         if (!response.ok) {
@@ -316,6 +374,15 @@ async function loadMenuData() {
         if (messageBox) messageBox.style.display = 'block';
     } finally {
         if (skeleton) skeleton.style.display = 'none';
+        if (spinner) {
+            spinner.classList.add('fade-out');
+            // Aguarda o tempo da transição (0.4s) antes de aplicar display: none
+            await new Promise(resolve => setTimeout(resolve, 400));
+            if (spinner.classList.contains('fade-out')) {
+                spinner.style.display = 'none';
+            }
+        }
+        document.body.classList.remove('no-scroll');
     }
 }
 

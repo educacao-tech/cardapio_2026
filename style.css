@@ -283,7 +283,7 @@
         /* Animação de entrada */
         opacity: 0;
         transform: translateY(20px);
-        transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
+        transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), box-shadow 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
         position: relative;
         overflow: hidden;
     }
@@ -418,9 +418,9 @@
 
     /* Destaque de Semanas */
     .current-week {
-        border: 2px solid var(--primary-color) !important;
+        border: 2px solid var(--primary-color);
         box-shadow: 0 20px 25px -5px var(--highlight-shadow-color);
-        transform: scale(1.03) !important;
+        transform: scale(1.03);
         background-color: var(--highlight-background-color);
         z-index: 10;
     }
@@ -428,6 +428,11 @@
     .past-week {
         opacity: 0.65;
         filter: grayscale(80%);
+    }
+
+    .current-week:hover {
+        transform: scale(1.03); /* Garante que o hover não altere o transform da semana atual */
+        box-shadow: 0 20px 25px -5px var(--highlight-shadow-color); /* Mantém a sombra de destaque */
     }
 
     .past-week:hover {
@@ -533,6 +538,57 @@
     color: var(--text-color-muted);
 }
 
+.message-box img.message-icon {
+    width: 100px; /* Ajuste o tamanho conforme necessário */
+    height: auto;
+    margin-top: 1rem;
+    opacity: 0.7;
+}
+
+/* Spinner de Carregamento */
+.spinner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--medium-gray);
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin-pulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px var(--focus-ring-color));
+}
+
+@keyframes spin-pulse {
+    0% { transform: rotate(0deg) scale(0.9); opacity: 0.7; }
+    50% { transform: rotate(180deg) scale(1.15); opacity: 1; }
+    100% { transform: rotate(360deg) scale(0.9); opacity: 0.7; }
+}
+
+/* Classe para animação de saída (fade-out) e estado oculto */
+.spinner-container.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Bloqueio de scroll durante o carregamento */
+.no-scroll {
+    overflow: hidden;
+}
+
 /* Skeleton Loading */
 .skeleton-wrapper {
     display: grid;
@@ -561,4 +617,30 @@
 
 .button-group.empty-group {
     display: none;
+}
+
+/* Estilos para fieldset e legend */
+.button-group { /* Este é agora um fieldset */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: rgba(0,0,0,0.02);
+    border-radius: 8px;
+    border: 1px solid var(--medium-gray);
+    padding-top: 2rem; /* Aumenta o padding-top para dar espaço à legend */
+    position: relative; /* Para posicionar a legend dentro */
+}
+
+.button-group > .group-label { /* Esta é agora uma legend */
+    display: block; /* Torna-o um elemento de bloco */
+    width: calc(100% - 1rem); /* Largura total menos o padding */
+    position: absolute;
+    top: 0.5rem; /* Posiciona no topo */
+    left: 0.5rem;
+    background-color: var(--surface-color); /* Cor de fundo para combinar com o card */
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-align: center; /* Centraliza o texto */
+    border-bottom: 1px solid var(--medium-gray); /* Separador sutil */
 }

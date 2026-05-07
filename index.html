@@ -32,42 +32,47 @@
             <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
         </div>
 
-        <div class="columns-container">
-            <div id="loading-skeleton" class="skeleton-wrapper">
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-            </div>
-            <div id="search-no-results" class="message-box" style="display: none;">
-                <h2>Nenhuma escola encontrada.</h2>
-                <p>Verifique o nome digitado ou tente outro termo.</p>
-            </div>
-            <div id="no-weeks-message" class="message-box" style="display: none;">
-                <h2>Nenhum cardápio disponível no momento.</h2>
-                <p>Por favor, volte mais tarde para conferir as novidades.</p>
-            </div>
-
+        <div id="loading-spinner" class="spinner-container">
+            <div class="spinner"></div>
         </div>
+
+        <div id="loading-skeleton" class="skeleton-wrapper">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+        <div id="search-no-results" class="message-box" style="display: none;">
+            <h2>Nenhuma escola encontrada.</h2>
+            <p>Verifique o nome digitado ou tente outro termo.</p>
+            <img src="assets/no-results.svg" alt="Nenhum resultado encontrado" class="message-icon">
+        </div>
+        <div id="no-weeks-message" class="message-box" style="display: none;">
+            <h2>Nenhum cardápio disponível no momento.</h2>
+            <p>Por favor, volte mais tarde para conferir as novidades.</p>
+            <img src="assets/no-data.svg" alt="Nenhum cardápio disponível" class="message-icon">
+        </div>
+
+        <div class="columns-container" id="week-cards-container"></div>
 
         <!-- Template para os cards da semana -->
         <template id="week-card-template">
             <section class="button-column">
                 <h2 class="column-title"></h2>
                 
-                <div class="button-group">
-                    <span class="group-label">Infantil / Creches</span>
+                <fieldset class="button-group">
+                    <legend class="group-label">Infantil / Creches</legend>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" data-link-key="creche-m-verde" title="Ver cardápio da Creche Municipal Verde" aria-label="Cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches" title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">CRECHES</a>
-                </div>
+                </fieldset>
 
-                <div class="button-group">
-                    <span class="group-label">Ensino Fundamental</span>
+                <fieldset class="button-group">
+                    <legend class="group-label">Ensino Fundamental</legend>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" data-link-key="fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA e PADRE</a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" data-link-key="fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">ANNA, ANSELMO, M. AP., FAGGIONI, BRAGUETTO</a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" data-link-key="fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">A. AUGUSTO, PORTINARI e M. VIRGÍNIA</a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO e WASHINGTON</a>
-                </div>
+                </fieldset>
                 
                 <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec" title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">ETEC / MÉDIO</a>
             </section>
