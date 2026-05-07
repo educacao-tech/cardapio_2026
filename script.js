@@ -7,6 +7,34 @@ const MONTH_ORDER = {
 };
 
 /**
+ * Versão da Aplicação (SemVer)
+ */
+const APP_VERSION = '1.0.2';
+
+/**
+ * Envia logs de erro para um serviço externo para monitoramento em produção.
+ * @param {Error} error - O objeto de erro.
+ * @param {object} context - Informações adicionais sobre onde o erro ocorreu.
+ */
+async function reportError(error, context = {}) {
+    const errorLog = {
+        version: APP_VERSION,
+        message: error.message,
+        stack: error.stack,
+        context: context,
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString()
+    };
+
+    // Para desenvolvimento, mantemos o log no console
+    console.error('[Error Monitor]:', errorLog);
+
+    // Exemplo de integração com serviço externo:
+    // await fetch('https://sua-api-de-logs.com/v1/report', { method: 'POST', body: JSON.stringify(errorLog) });
+}
+
+/**
  * Valida se uma string é uma URL bem-formada.
  * @param {string} string - A string a ser validada.
  * @returns {boolean} - True se a URL for válida, false caso contrário.
@@ -59,6 +87,21 @@ function createWeekCard(weekData, isCurrent = false) {
             button.classList.add('disabled');
         }
     });
+
+    const shareBtn = section.querySelector('.share-button');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const weekTitle = weekData.title;
+            // Gera uma URL que aponta para o ID da semana no site atual
+            const shareUrl = `${window.location.origin}${window.location.pathname}#${weekData.weekId}`;
+            
+            const message = `Confira o cardápio da Secretaria da Educação de Batatais para a ${weekTitle}:\n\n${shareUrl}`;
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+        });
+    }
 
     return section;
 }
@@ -221,16 +264,34 @@ function buildAnnualMenu(menuData) {
 
     // Define o mês inicial a ser exibido
     const currentMonthName = Object.keys(MONTH_ORDER).find(key => MONTH_ORDER[key] === currentMonthIndex);
-    
-    // Se o mês atual tiver dados, mostra ele; caso contrário, mostra o primeiro mês disponível
-    let monthToShow = null;
-    if (activeMonthNames.length > 0) {
-        monthToShow = activeMonthNames.includes(currentMonthName) 
-            ? currentMonthName 
-            : activeMonthNames[0];
-    }
+    const hash = window.location.hash;
+    let monthFromHash = null;
 
-    if (monthToShow) showMonth(monthToShow);
+    // Se houver um hash, identifica a qual mês ele pertence
+    if (hash) {
+        const targetWeek = document.getElementById(hash.substring(1));
+        if (targetWeek) {
+            const parentMonth = targetWeek.closest('.month-wrapper');
+            if (parentMonth) monthFromHash = parentMonth.id.replace('month-', '');
+        }
+    }
+    
+    // Prioridade: Mês do Hash > Mês Atual > Primeiro Mês Ativo
+    const monthToShow = monthFromHash || (activeMonthNames.includes(currentMonthName) ? currentMonthName : activeMonthNames[0]);
+
+    if (monthToShow) {
+        showMonth(monthToShow).then(() => {
+            if (hash) {
+                const targetWeek = document.getElementById(hash.substring(1));
+                if (targetWeek) {
+                    // Pequeno atraso para aguardar o fade-in do mês (0.4s) e do card
+                    setTimeout(() => {
+                        targetWeek.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 450);
+                }
+            }
+        });
+    }
 
     // Implementação da Busca/Filtro
     const searchInput = document.getElementById('school-search');
@@ -344,6 +405,48 @@ function initializeStaticFeatures() {
     // Atualiza o ano no rodapé
     const yearElement = document.getElementById('current-year');
     if (yearElement) yearElement.textContent = new Date().getFullYear();
+
+    // Atualiza a versão no rodapé
+    const versionElement = document.getElementById('app-version');
+    if (versionElement) versionElement.textContent = APP_VERSION;
+
+    // Lógica do Modal de Changelog
+    const versionBtn = document.getElementById('version-link');
+    const modal = document.getElementById('changelog-modal');
+    const closeBtn = document.getElementById('close-modal');
+    const newBadge = document.getElementById('new-version-badge');
+
+    // Verifica se o usuário já viu esta versão
+    const lastSeenVersion = localStorage.getItem('app_version_seen');
+    if (newBadge && lastSeenVersion !== APP_VERSION) {
+        newBadge.style.display = 'inline-block';
+    }
+
+    if (versionBtn && modal) {
+        const toggleModal = (show) => {
+            modal.classList.toggle('show', show);
+            modal.setAttribute('aria-hidden', !show);
+            document.body.classList.toggle('no-scroll', show);
+
+            // Se abrir o modal, marca a versão como vista e esconde a etiqueta
+            if (show) {
+                localStorage.setItem('app_version_seen', APP_VERSION);
+                if (newBadge) newBadge.style.display = 'none';
+            }
+        };
+
+        versionBtn.addEventListener('click', () => toggleModal(true));
+        if (closeBtn) closeBtn.addEventListener('click', () => toggleModal(false));
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) toggleModal(false);
+        });
+
+        // Fecha com a tecla Esc para melhor acessibilidade
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) toggleModal(false);
+        });
+    }
 }
 
 /**
@@ -368,7 +471,25 @@ async function loadMenuData() {
         }
         const menuData = await response.json();
         buildAnnualMenu(menuData);
+
+        // Transição do Spinner para o Checkmark
+        const spinnerIcon = spinner.querySelector('.spinner');
+        const checkmarkWrapper = spinner.querySelector('.checkmark-wrapper');
+        
+        if (spinnerIcon && checkmarkWrapper) {
+            spinnerIcon.style.display = 'none';
+            checkmarkWrapper.style.display = 'flex';
+            
+            // Toca o som sincronizado com o checkmark
+            const successSound = new Audio('assets/success.mp3');
+            successSound.volume = 0.3;
+            successSound.play().catch(() => console.log("Áudio bloqueado pelo navegador."));
+
+            // Aguarda a animação do checkmark terminar antes do fade-out
+            await new Promise(resolve => setTimeout(resolve, 1200));
+        }
     } catch (error) {
+        reportError(error, { action: 'loadMenuData', file: 'menu-links.json' });
         console.error("Não foi possível carregar os links dos cardápios:", error);
         const messageBox = document.getElementById('no-weeks-message');
         if (messageBox) messageBox.style.display = 'block';
@@ -384,6 +505,93 @@ async function loadMenuData() {
         }
         document.body.classList.remove('no-scroll');
     }
+}
+
+// Lógica para o Botão de Instalação Customizado (PWA)
+let deferredPrompt;
+const installBtn = document.getElementById('install-button');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Previne o mini-infobar padrão do Chrome
+    e.preventDefault();
+    // Guarda o evento para ser disparado depois
+    deferredPrompt = e;
+    // Mostra o nosso botão customizado
+    if (installBtn) installBtn.style.display = 'flex';
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        // Mostra o prompt de instalação nativo
+        deferredPrompt.prompt();
+        // Aguarda a resposta do usuário
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`Usuário respondeu à instalação: ${outcome}`);
+        // Limpa o prompt, ele só pode ser usado uma vez
+        deferredPrompt = null;
+        // Esconde o botão após a interação
+        installBtn.style.display = 'none';
+    });
+}
+
+window.addEventListener('appinstalled', () => {
+    // Esconde o botão se o app já foi instalado com sucesso
+    if (installBtn) installBtn.style.display = 'none';
+    console.log('PWA instalado com sucesso!');
+});
+
+/**
+ * Converte a chave VAPID pública de base64 para Uint8Array
+ */
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+/**
+ * Configura as notificações Push
+ */
+async function setupPushNotifications(registration) {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+
+        // Substitua 'SUA_CHAVE_VAPID_PUBLICA_AQUI' pela sua chave real
+        const vapidPublicKey = 'SUA_CHAVE_VAPID_PUBLICA_AQUI';
+        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey
+        });
+
+        console.log('Usuário inscrito no Push:', JSON.stringify(subscription));
+        
+        // AQUI VOCÊ DEVE ENVIAR O OBJETO 'subscription' PARA O SEU SERVIDOR
+        // via fetch('sua-api.com/subscribe', { method: 'POST', body: ... })
+        
+    } catch (err) {
+        console.error('Erro ao inscrever para notificações push:', err);
+    }
+}
+
+// Registro do Service Worker para PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => {
+                console.log('Service Worker registrado com sucesso:', reg.scope);
+                setupPushNotifications(reg); // Inicia configuração de Push
+            })
+            .catch(err => console.error('Falha ao registrar Service Worker:', err));
+    });
 }
 
 document.addEventListener('DOMContentLoaded', loadMenuData);

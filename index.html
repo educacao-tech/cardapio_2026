@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Cardápios anuais da rede municipal de Batatais para o ano de 2026.">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <link rel="manifest" href="manifest.json">
     <title>Cardápio Anual 2026</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -17,6 +22,7 @@
                     <a href="https://sites.google.com/educacao.batatais.sp.gov.br/seceduc/in%c3%adcio" target="_blank"
                         rel="noopener noreferrer">← Voltar para a Página Principal</a>
                 </p>
+                <button id="install-button" class="install-btn" title="Instalar Aplicativo" style="display: none;">📲 Instalar App</button>
                 <button id="theme-toggle" title="Alternar tema">🌙</button>
             </div>
             <h1>Cardápio Anual 2026</h1>
@@ -34,6 +40,12 @@
 
         <div id="loading-spinner" class="spinner-container">
             <div class="spinner"></div>
+            <div class="checkmark-wrapper" style="display: none;">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
         </div>
 
         <div id="loading-skeleton" class="skeleton-wrapper">
@@ -57,7 +69,12 @@
         <!-- Template para os cards da semana -->
         <template id="week-card-template">
             <section class="button-column">
-                <h2 class="column-title"></h2>
+                <div class="column-header">
+                    <h2 class="column-title"></h2>
+                    <button class="share-button" title="Compartilhar" aria-label="Compartilhar esta semana">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                    </button>
+                </div>
                 
                 <fieldset class="button-group">
                     <legend class="group-label">Infantil / Creches</legend>
@@ -80,8 +97,30 @@
     </main>
 
     <button id="back-to-top" title="Voltar ao topo">↑</button>
+
+    <!-- Modal de Histórico de Alterações -->
+    <div id="changelog-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Histórico de Alterações</h2>
+                <button id="close-modal" class="close-btn" aria-label="Fechar modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <ul class="changelog-list">
+                    <li><strong>v1.0.2</strong> - Adicionado feedback sonoro e animação de confirmação (Checkmark).</li>
+                    <li><strong>v1.0.1</strong> - Ajustes de layout para melhor visualização em telas menores e modo escuro.</li>
+                    <li><strong>v1.0.0</strong> - Lançamento oficial da plataforma de cardápios 2026.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <footer class="main-footer">
-        <p>&copy; <span id="current-year">2026</span> Secretaria da Educação de Batatais. Todos os direitos reservados.
+        <p>&copy; <span id="current-year">2026</span> Secretaria da Educação de Batatais. Todos os direitos reservados. 
+           <button id="version-link" class="version-tag" title="Ver histórico de alterações">
+                v<span id="app-version">1.0.2</span>
+                <span id="new-version-badge" class="new-badge" style="display: none;">NOVO</span>
+           </button>
         </p>
     </footer>
 
