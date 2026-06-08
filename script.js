@@ -11,6 +11,11 @@ const MONTH_ORDER = {
  */
 const APP_VERSION = '1.0.2';
 
+let monthSelector;
+let monthScrollLeftBtn;
+let monthScrollRightBtn;
+
+const ERROR_LOG_KEY = 'app_error_logs'; // Chave para armazenar logs no localStorage
 /**
  * Envia logs de erro para um serviço externo para monitoramento em produção.
  * @param {Error} error - O objeto de erro.
@@ -29,6 +34,12 @@ async function reportError(error, context = {}) {
 
     // Para desenvolvimento, mantemos o log no console
     console.error('[Error Monitor]:', errorLog);
+
+    // Armazena o log no localStorage
+    const existingLogs = JSON.parse(localStorage.getItem(ERROR_LOG_KEY) || '[]');
+    existingLogs.push(errorLog);
+    // Limita o número de logs para não sobrecarregar o localStorage (ex: últimos 50 erros)
+    localStorage.setItem(ERROR_LOG_KEY, JSON.stringify(existingLogs.slice(-50)));
 
     // Exemplo de integração com serviço externo:
     // await fetch('https://sua-api-de-logs.com/v1/report', { method: 'POST', body: JSON.stringify(errorLog) });
@@ -107,6 +118,29 @@ function createWeekCard(weekData, isCurrent = false) {
 }
 
 /**
+ * Updates the visibility of month scroll indicators based on scroll position.
+ */
+function updateMonthScrollIndicators() {
+    if (!monthSelector || !monthScrollLeftBtn || !monthScrollRightBtn) return;
+
+    const { scrollWidth, clientWidth, scrollLeft } = monthSelector;
+    const isScrollable = scrollWidth > clientWidth;
+
+    monthScrollLeftBtn.style.display = (isScrollable && scrollLeft > 0) ? 'flex' : 'none';
+    monthScrollRightBtn.style.display = (isScrollable && scrollLeft + clientWidth < scrollWidth) ? 'flex' : 'none';
+}
+
+/**
+ * Scrolls the month selector horizontally.
+ * @param {number} direction - -1 for left, 1 for right.
+ */
+function scrollMonthSelector(direction) {
+    if (!monthSelector) return;
+    const scrollAmount = monthSelector.clientWidth / 2; // Scroll half the visible width
+    monthSelector.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+}
+
+/**
  * Alterna a visibilidade para mostrar apenas o mês selecionado.
  * @param {string} monthName - Nome do mês a ser exibido.
  */
@@ -121,6 +155,12 @@ async function showMonth(monthName) {
         const isActive = btn.textContent.toLowerCase() === monthName.toLowerCase();
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-current', isActive ? 'page' : 'false');
+
+        // Centraliza o botão do mês no seletor horizontal caso ele esteja fora da área visível
+        if (isActive) {
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            updateMonthScrollIndicators(); // Atualiza os indicadores após o scroll
+        }
     });
 
     // Fase 1: Fade out do mês atual (se houver um)
@@ -159,19 +199,28 @@ async function showMonth(monthName) {
 
 /**
  * Renderiza o seletor de meses no topo da página.
- * @param {string[]} months - Lista de nomes de meses ativos.
+ * @param {object[]} months - Lista de objetos com nome e status { name, isSoon }.
  */
 function renderMonthSelector(months) {
     const selector = document.getElementById('month-selector');
     if (!selector || months.length === 0) return;
 
     selector.innerHTML = '';
-    months.forEach(month => {
+    months.forEach(monthObj => {
         const btn = document.createElement('button');
         btn.className = 'month-nav-btn';
-        btn.textContent = month;
-        btn.onclick = () => showMonth(month);
+        btn.textContent = monthObj.name;
+
+        if (monthObj.isSoon) {
+            const badge = document.createElement('span');
+            badge.className = 'soon-badge';
+            badge.textContent = 'Em Breve';
+            btn.appendChild(badge);
+        }
+
+        btn.onclick = () => showMonth(monthObj.name);
         selector.appendChild(btn);
+        updateMonthScrollIndicators(); // Atualiza os indicadores após renderizar os botões
     });
 }
 
@@ -190,7 +239,7 @@ function buildAnnualMenu(menuData) {
     const currentYear = today.getFullYear().toString();
     const yearData = menuData[currentYear];
     const currentMonthIndex = today.getUTCMonth();    
-    const activeMonthNames = [];
+    const activeMonthsData = [];
 
     let totalActiveWeeks = 0;
 
@@ -210,6 +259,7 @@ function buildAnnualMenu(menuData) {
             weeksContainer.className = 'columns-container';
 
             let weeksInMonth = 0;
+            let isMonthReady = false;
             monthData.forEach(weekData => {
                 if (weekData.active === false) return;
 
@@ -219,6 +269,10 @@ function buildAnnualMenu(menuData) {
                 const startDate = new Date(`${weekData.startDate}T00:00:00Z`);
                 const endDate = new Date(`${weekData.endDate}T23:59:59Z`);
                 const isCurrent = today >= startDate && today <= endDate;
+
+                // Verifica se esta semana possui ao menos um link real (diferente de #)
+                const hasValidLink = Object.values(weekData.links).some(link => isValidUrl(link));
+                if (hasValidLink) isMonthReady = true;
 
                 const weekCard = createWeekCard(weekData, isCurrent);
 
@@ -241,12 +295,12 @@ function buildAnnualMenu(menuData) {
 
                 monthWrapper.appendChild(weeksContainer);
                 fragment.appendChild(monthWrapper);
-                activeMonthNames.push(monthName.toLowerCase());
+                activeMonthsData.push({ name: monthName.toLowerCase(), isSoon: !isMonthReady });
             }
         }
     }
 
-    renderMonthSelector(activeMonthNames);
+    renderMonthSelector(activeMonthsData);
 
     if (totalActiveWeeks === 0) {
         const messageBox = document.getElementById('no-weeks-message');
@@ -276,8 +330,9 @@ function buildAnnualMenu(menuData) {
         }
     }
     
-    // Prioridade: Mês do Hash > Mês Atual > Primeiro Mês Ativo
-    const monthToShow = monthFromHash || (activeMonthNames.includes(currentMonthName) ? currentMonthName : activeMonthNames[0]);
+    // Prioridade: Mês do Hash > Mês Atual > Último Mês Ativo (Mês mais recente disponível)
+    const activeMonthNames = activeMonthsData.map(m => m.name);
+    const monthToShow = monthFromHash || (activeMonthNames.includes(currentMonthName) ? currentMonthName : activeMonthNames[activeMonthNames.length - 1]);
 
     if (monthToShow) {
         showMonth(monthToShow).then(() => {
@@ -293,47 +348,68 @@ function buildAnnualMenu(menuData) {
         });
     }
 
-    // Implementação da Busca/Filtro
     const searchInput = document.getElementById('school-search');
     const clearBtn = document.getElementById('clear-search');
     const noResultsMsg = document.getElementById('search-no-results');
 
-    let searchTimeout;
-    const debounceDelay = 300; // ms
+    // Otimização para dispositivos móveis: Pré-cache de elementos e strings de busca
+    const cards = Array.from(mainContainer.querySelectorAll('.button-column'));
+    const searchCache = cards.map(card => ({
+        card,
+        groups: Array.from(card.querySelectorAll('.button-group')).map(group => ({
+            group,
+            buttons: Array.from(group.querySelectorAll('.button')).map(btn => ({
+                btn,
+                searchText: (btn.textContent + ' ' + (btn.getAttribute('aria-label') || '')).toLowerCase()
+            }))
+        }))
+    }));
 
+    let searchTimeout;
     if (searchInput) {
+        const skeleton = document.getElementById('loading-skeleton');
+
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
+            const term = e.target.value.toLowerCase().trim();
+
+            // Feedback visual imediato: exibe o skeleton e oculta os cards atuais enquanto processa
+            if (skeleton && mainContainer) {
+                skeleton.style.display = 'grid';
+                mainContainer.style.display = 'none';
+                if (noResultsMsg) noResultsMsg.style.display = 'none';
+            }
+
             searchTimeout = setTimeout(() => {
-                const term = e.target.value.toLowerCase();
-                const allButtons = document.querySelectorAll('.button-column .button');
-                let hasVisibleCards = false;
-
                 if (clearBtn) clearBtn.style.display = term ? 'block' : 'none';
-                
-                allButtons.forEach(btn => {
-                    const text = btn.textContent.toLowerCase();
-                    const label = btn.getAttribute('aria-label')?.toLowerCase() || '';
-                    const isMatch = text.includes(term) || label.includes(term);
-                    btn.classList.toggle('filtered-out', !isMatch);
-                });
 
-                // Esconde grupos vazios
-                document.querySelectorAll('.button-group').forEach(group => {
-                    const hasVisibleButtons = Array.from(group.querySelectorAll('.button'))
-                        .some(btn => !btn.classList.contains('filtered-out'));
-                    group.classList.toggle('empty-group', !hasVisibleButtons);
-                });
+                requestAnimationFrame(() => {
+                    let globalMatch = false;
+                    searchCache.forEach(data => {
+                        let cardMatch = false;
+                        data.groups.forEach(gData => {
+                            let groupMatch = false;
+                            gData.buttons.forEach(bData => {
+                                const isMatch = !term || bData.searchText.includes(term);
+                                bData.btn.classList.toggle('filtered-out', !isMatch);
+                                if (isMatch) groupMatch = true;
+                            });
+                            gData.group.classList.toggle('empty-group', !groupMatch);
+                            if (groupMatch) cardMatch = true;
+                        });
+                        data.card.style.display = cardMatch ? 'flex' : 'none';
+                        if (cardMatch) globalMatch = true;
+                    });
 
-                // Garante que o card seja visível apenas se tiver algum botão correspondente
-                document.querySelectorAll('.button-column').forEach(card => {
-                    const isVisible = card.querySelectorAll('.button:not(.filtered-out)').length > 0;
-                    card.style.display = isVisible ? 'flex' : 'none';
-                    if (isVisible) hasVisibleCards = true;
-                });
+                    // Finaliza o feedback visual: oculta skeleton e restaura container (se houver resultados)
+                    if (skeleton && mainContainer) {
+                        skeleton.style.display = 'none';
+                        mainContainer.style.display = (globalMatch || term === '') ? 'grid' : 'none';
+                    }
 
-                if (noResultsMsg) noResultsMsg.style.display = (!hasVisibleCards && term !== '') ? 'block' : 'none';
-            }, debounceDelay);
+                    if (noResultsMsg) noResultsMsg.style.display = (!globalMatch && term !== '') ? 'block' : 'none';
+                });
+            }, 300);
         });
 
         if (clearBtn) {
@@ -411,6 +487,24 @@ function initializeStaticFeatures() {
     if (versionElement) versionElement.textContent = APP_VERSION;
 
     // Lógica do Modal de Changelog
+
+    // Inicializa os botões de scroll do mês e seus listeners
+    monthSelector = document.getElementById('month-selector');
+    monthScrollLeftBtn = document.getElementById('month-scroll-left');
+    monthScrollRightBtn = document.getElementById('month-scroll-right');
+
+    if (monthSelector) {
+        monthSelector.addEventListener('scroll', updateMonthScrollIndicators);
+    }
+    if (monthScrollLeftBtn) {
+        monthScrollLeftBtn.addEventListener('click', () => scrollMonthSelector(-1));
+    }
+    if (monthScrollRightBtn) {
+        monthScrollRightBtn.addEventListener('click', () => scrollMonthSelector(1));
+    }
+    window.addEventListener('resize', updateMonthScrollIndicators);
+    // Chamada inicial para definir o estado correto (será chamado novamente após o carregamento dos dados do menu)
+    updateMonthScrollIndicators();
     const versionBtn = document.getElementById('version-link');
     const modal = document.getElementById('changelog-modal');
     const closeBtn = document.getElementById('close-modal');

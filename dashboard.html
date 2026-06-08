@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Diagnóstico - Cardápio 2026</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="style.css"> <!-- Para usar as variáveis de tema -->
+</head>
+<body class="dark-mode"> <!-- Inicia em dark-mode para melhor contraste -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Dashboard de Diagnóstico</h1>
+            <button id="clear-logs-btn" class="clear-btn">Limpar Logs</button>
+        </div>
+        <div id="error-logs" class="error-logs">
+            <p class="no-logs-message">Nenhum erro registrado ainda.</p>
+        </div>
+        <div class="dashboard-footer">
+            <p>Versão da Aplicação: <span id="app-version-display"></span></p>
+            <p>Apenas para uso de diagnóstico. Não compartilhe esta URL.</p>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
