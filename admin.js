@@ -2,6 +2,7 @@ let fullMenuData = {};
 const year = "2026";
 const editor = document.getElementById('editor-container');
 const monthSelect = document.getElementById('select-month');
+const weekSelect = document.getElementById('select-week');
 
 // Mapeamento amigável para os campos de links
 const linkLabels = {
@@ -80,7 +81,24 @@ async function init(force = false) {
 
 monthSelect.addEventListener('change', (e) => {
     const month = e.target.value;
+    
+    // Limpa e desabilita o seletor de semanas ao trocar o mês
+    weekSelect.innerHTML = '<option value="">Selecione uma semana...</option>';
+    weekSelect.disabled = true;
+
     if (month && fullMenuData[year] && fullMenuData[year][month]) {
+        // Popula o seletor de semanas com as opções do mês selecionado
+        weekSelect.innerHTML += '<option value="all">👁️ Ver Todas as Semanas</option>';
+        fullMenuData[year][month].forEach((week, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.textContent = week.title;
+            weekSelect.appendChild(opt);
+        });
+        
+        weekSelect.disabled = false;
+        weekSelect.value = 'all'; // Define "Ver Todas" como padrão inicial
+
         renderMonth(month);
     } else if (month && (!fullMenuData[year] || !fullMenuData[year][month])) {
         setEditorMessage(`⚠️ O mês de <strong>${month}</strong> ainda não existe no arquivo JSON.`);
@@ -89,11 +107,22 @@ monthSelect.addEventListener('change', (e) => {
     }
 });
 
-function renderMonth(month) {
-    const weeks = fullMenuData[year][month] || [];
+weekSelect.addEventListener('change', (e) => {
+    const month = monthSelect.value;
+    const val = e.target.value;
+    if (month) {
+        renderMonth(month, (val === 'all' || val === '') ? null : val);
+    }
+});
+
+function renderMonth(month, specificIndex = null) {
+    const allWeeks = fullMenuData[year][month] || [];
     editor.innerHTML = `<h2>📅 ${month.toUpperCase()} ${year}</h2>`;
 
-    weeks.forEach((week, index) => {
+    allWeeks.forEach((week, index) => {
+        // Se uma semana específica foi selecionada no filtro, ignora as outras
+        if (specificIndex !== null && index.toString() !== specificIndex.toString()) return;
+
         const weekDiv = document.createElement('div');
         weekDiv.className = 'week-edit-card';
         
