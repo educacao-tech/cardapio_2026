@@ -6,14 +6,14 @@ const weekSelect = document.getElementById('select-week');
 
 // Mapeamento amigável para os campos de links
 const linkLabels = {
-    'creche-m-verde': 'Creche M. Verde',
-    'creches': 'Demais Creches',
-    'fundamental-braga': 'Braga, Caic, Célia, Alzira e Padre',
-    'fundamental-anna': 'Anna, Anselmo, M. Ap., Faggioni, Braguetto',
-    'fundamental-aaugusto': 'A. Augusto, Portinari e M. Virgínia',
-    'fundamental-esther': 'Esther Vianna',
-    'fundamental-gtl': 'GTL, EESA, Castelo e Washington',
-    'etec': 'ETEC / Ensino Médio'
+    'creche-m-verde': { text: 'Creche M. Verde', icon: '🌱' },
+    'creches': { text: 'Demais Creches', icon: '👶' },
+    'fundamental-braga': { text: 'Braga, Caic, Célia, Alzira e Padre', icon: '📚' },
+    'fundamental-anna': { text: 'Anna, Anselmo, M. Ap., Faggioni, Braguetto', icon: '✏️' },
+    'fundamental-aaugusto': { text: 'A. Augusto, Portinari e M. Virgínia', icon: '🏫' },
+    'fundamental-esther': { text: 'Esther Vianna', icon: '🎓' },
+    'fundamental-gtl': { text: 'GTL, EESA, Castelo e Washington', icon: '📝' },
+    'etec': { text: 'ETEC / Ensino Médio', icon: '🔬' }
 };
 
 /**
@@ -135,8 +135,8 @@ function renderMonth(month, specificIndex = null) {
         let linksHtml = '';
         for (const [key, label] of Object.entries(linkLabels)) {
             linksHtml += `
-                <div class="input-group">
-                    <label>${label}:</label>
+                <div class="input-group admin-input-group school-input-group" data-school-type="${key}">
+                    <label><span class="school-icon">${label.icon}</span> ${label.text}:</label>
                     <input type="text" value="${week.links[key] || '#'}" 
                         data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
                 </div>
@@ -153,10 +153,10 @@ function renderMonth(month, specificIndex = null) {
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <label style="cursor:pointer; font-size: 0.8rem; display: block; font-weight: bold;">
-                        <input type="checkbox" ${week.active ? 'checked' : ''} 
-                            data-month="${month}" data-index="${index}" class="active-checkbox"> 
-                        Exibir no App
+                    <span style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 4px; color: var(--text-color-muted);">ATIVO</span>
+                    <label class="modern-switch">
+                        <input type="checkbox" ${week.active ? 'checked' : ''} data-month="${month}" data-index="${index}" class="active-checkbox">
+                        <span class="modern-slider"></span>
                     </label>
                 </div>
             </div>

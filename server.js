@@ -133,6 +133,10 @@ app.listen(PORT, async () => {
 
     // Abre o navegador automaticamente ao iniciar o servidor
     await open(url);
+    // Abre o navegador automaticamente apenas em modo de desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+        await open(url);
+    }
 });
 
 // Garante que o processo termine de forma limpa ao reiniciar

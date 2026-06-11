@@ -713,6 +713,11 @@
     .admin-input-group[data-school-type="fundamental-aaugusto"] label { color: var(--btn-fundamental-aaugusto); }
     .admin-input-group[data-school-type="etec"] label { color: var(--btn-etec); }
 
+    /* Estilo para os ícones das escolas no Admin */
+    .school-input-group label .school-icon {
+        margin-right: 5px;
+        font-size: 1.1em; /* Ajusta o tamanho do ícone */
+    }
     /* Ajustes para Tema Escuro no Admin */
     :root.dark-mode .actions {
         background: rgba(30, 30, 30, 0.8);
