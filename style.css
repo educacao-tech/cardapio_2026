@@ -697,6 +697,32 @@
     }
     .btn-small:hover { background: var(--background-color); border-color: var(--primary-color); }
     .action-clear:hover { color: #dc3545; border-color: #dc3545; }
+
+    /* Interruptor Moderno (Switch) */
+    .modern-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .modern-switch input { opacity: 0; width: 0; height: 0; }
+    .modern-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--medium-gray); transition: .4s; border-radius: 24px; }
+    .modern-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    input:checked + .modern-slider { background-color: var(--primary-color); }
+    input:checked + .modern-slider:before { transform: translateX(20px); }
+
+    /* Destaque sutil por tipo de escola no Admin */
+    .admin-input-group[data-school-type="creche-m-verde"] label { color: var(--btn-creche-m-verde); }
+    .admin-input-group[data-school-type="creches"] label { color: var(--btn-creches); }
+    .admin-input-group[data-school-type="fundamental-braga"] label { color: #b08a00; }
+    .admin-input-group[data-school-type="fundamental-aaugusto"] label { color: var(--btn-fundamental-aaugusto); }
+    .admin-input-group[data-school-type="etec"] label { color: var(--btn-etec); }
+
+    /* Ajustes para Tema Escuro no Admin */
+    :root.dark-mode .actions {
+        background: rgba(30, 30, 30, 0.8);
+        border-color: #444;
+    }
+
+    :root.dark-mode .week-edit-card {
+        background: #252525;
+        border-color: #333;
+    }
 }
 
 /* Media Queries para Responsividade */
