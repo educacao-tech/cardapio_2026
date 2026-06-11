@@ -4,9 +4,9 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Configurações de acesso (Mantenha seguras!)
-const ADMIN_EMAIL = 'madscold@gmail.com';
-const ADMIN_PASSWORD = 'qwe123';
-const CAPTCHA_SECRET = 'batatais-2026-secret-key';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'madscold@gmail.com'; // Fallback para dev
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'qwe123'; // Fallback para dev
+const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || 'batatais-2026-secret-key'; // Fallback para dev
 
 // Defina como true para pular o envio de e-mail e o código 2FA nos testes locais
 const BYPASS_2FA = true; 
@@ -19,8 +19,8 @@ const pending2FA = {};
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'seu-email@gmail.com',
-        pass: 'sua-senha-de-app'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 

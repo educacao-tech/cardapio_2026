@@ -1,4 +1,5 @@
 let fullMenuData = {};
+let hasUnsavedChanges = false;
 const year = "2026";
 const editor = document.getElementById('editor-container');
 const monthSelect = document.getElementById('select-month');
@@ -19,8 +20,82 @@ const linkLabels = {
 /**
  * Exibe uma mensagem no container do editor
  */
-function setEditorMessage(msg) {
-    editor.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-color-muted);">${msg}</div>`;
+function setEditorMessage(msg, type = 'info') {
+    editor.innerHTML = `<div class="editor-message editor-message-${type}">${msg}</div>`;
+}
+
+/**
+ * Atualiza as estatísticas do dashboard (links totais, preenchidos e faltando)
+ */
+function updateDashboard() {
+    const month = monthSelect.value;
+    const dashboard = document.getElementById('admin-dashboard');
+    
+    if (!month || !fullMenuData[year] || !fullMenuData[year][month]) {
+        if (dashboard) dashboard.style.display = 'none';
+        return;
+    }
+
+    if (dashboard) dashboard.style.display = 'grid';
+    const weeks = fullMenuData[year][month];
+    const schoolKeys = Object.keys(linkLabels);
+    
+    let totalLinks = weeks.length * schoolKeys.length;
+    let filledLinks = 0;
+    const missingSchoolsMap = new Map(); // Usamos Map para guardar chave -> nome
+
+    weeks.forEach(week => {
+        schoolKeys.forEach(key => {
+            const url = week.links[key];
+            if (url && url !== '#' && url.trim() !== '') {
+                filledLinks++;
+            } else {
+                missingSchoolsMap.set(key, linkLabels[key].text);
+            }
+        });
+    });
+
+    document.getElementById('stat-total').textContent = totalLinks;
+    document.getElementById('stat-filled').textContent = filledLinks;
+    document.getElementById('stat-missing').textContent = totalLinks - filledLinks;
+
+    const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
+    document.getElementById('stat-percent').textContent = `${percentage}%`;
+    
+    const progressFill = document.getElementById('progress-fill');
+    if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+        progressFill.style.backgroundColor = percentage === 100 ? 'var(--btn-creche-m-verde)' : 'var(--primary-color)';
+    }
+
+    const missingListEl = document.getElementById('missing-schools-list');
+    const missingContainer = document.getElementById('missing-schools-container');
+    if (missingListEl && missingContainer) {
+        missingListEl.innerHTML = '';
+        if (missingSchoolsMap.size > 0 && percentage < 100) {
+            missingContainer.style.display = 'block';
+            missingSchoolsMap.forEach((schoolName, schoolKey) => {
+                const badge = document.createElement('span');
+                badge.className = 'missing-school-badge';
+                badge.textContent = schoolName;
+                badge.title = `Clique para ir ao campo de ${schoolName}`;
+                
+                // Ao clicar, localiza o primeiro input vazio desta escola
+                badge.onclick = () => {
+                    const inputs = document.querySelectorAll(`.link-input[data-key="${schoolKey}"]`);
+                    const target = Array.from(inputs).find(i => !i.value || i.value === '#' || i.value.trim() === '');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => target.focus(), 300); // Pequeno atraso para o scroll terminar
+                    }
+                };
+                
+                missingListEl.appendChild(badge);
+            });
+        } else {
+            missingContainer.style.display = 'none';
+        }
+    }
 }
 
 /**
@@ -36,8 +111,26 @@ function isValidUrl(string) {
     }
 }
 
+/**
+ * Limpa URLs do Google Drive/Docs removendo parâmetros desnecessários
+ */
+function cleanGoogleUrl(url) {
+    if (!url || url.indexOf('drive.google.com') === -1 && url.indexOf('docs.google.com') === -1) return url;
+    try {
+        const urlObj = new URL(url);
+        return `${urlObj.origin}${urlObj.pathname}`;
+    } catch (e) { return url; }
+}
+
 function validateInput(input) {
-    input.classList.toggle('invalid-link', !isValidUrl(input.value));
+    const cleaned = cleanGoogleUrl(input.value.trim());
+    if (input.value !== cleaned) input.value = cleaned;
+
+    const isValid = isValidUrl(cleaned);
+    input.classList.toggle('invalid-link', !isValid);
+    
+    const isRealLink = cleaned && cleaned !== '#' && cleaned !== '';
+    input.classList.toggle('valid-link', isValid && isRealLink);
 }
 
 async function init(force = false) {
@@ -55,7 +148,7 @@ async function init(force = false) {
         const res = await fetch(`${apiUrl}/menu`);
         if (res.ok) {
             fullMenuData = await res.json();
-            setEditorMessage('✅ Dados carregados. Selecione um mês para começar.');
+            setEditorMessage('✅ Dados carregados. Selecione um mês para começar.', 'success');
             monthSelect.disabled = false; // Habilita o seletor de mês
             document.getElementById('login-overlay').style.display = 'none';
 
@@ -70,9 +163,9 @@ async function init(force = false) {
         } else if (res.status === 401) {
             const data = await res.json().catch(() => ({}));
             if (data.require2FA || data.requireCaptcha) return; // Não faz nada, o wrapper do admin.html cuida disso
-
+            showToast(data.error || 'Sessão expirada ou acesso negado.', 'error');
             document.getElementById('login-overlay').style.display = 'flex';
-            setEditorMessage('❌ Sessão expirada ou acesso negado.');
+            setEditorMessage('❌ Sessão expirada ou acesso negado.', 'error');
         }
     } catch (err) {
         setEditorMessage('❌ Erro ao conectar com o servidor. Verifique se o login foi realizado.');
@@ -106,10 +199,13 @@ monthSelect.addEventListener('change', (e) => {
         weekSelect.value = 'all'; // Define "Ver Todas" como padrão inicial
 
         renderMonth(month);
+        updateDashboard();
     } else if (month && (!fullMenuData[year] || !fullMenuData[year][month])) {
-        setEditorMessage(`⚠️ O mês de <strong>${month}</strong> ainda não existe no arquivo JSON.`);
+        setEditorMessage(`⚠️ O mês de <strong>${month}</strong> ainda não existe no arquivo JSON.`, 'warning');
+        updateDashboard();
     } else {
         setEditorMessage('Selecione um mês para editar as semanas.');
+        updateDashboard();
     }
 });
 
@@ -121,9 +217,43 @@ weekSelect.addEventListener('change', (e) => {
     }
 });
 
+/**
+ * Solicita ao servidor que verifique se a URL é acessível
+ */
+async function checkAccessibility(input) {
+    const url = input.value.trim();
+    const container = input.closest('.school-input-group');
+    const statusEl = container.querySelector('.accessibility-status');
+    
+    if (!url || url === '#' || !isValidUrl(url)) {
+        statusEl.textContent = '';
+        return;
+    }
+
+    statusEl.textContent = '⏳';
+    try {
+        const res = await fetch('/api/proxy-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+        statusEl.textContent = data.reachable ? '✅' : '❌';
+        statusEl.title = data.reachable ? 'Link acessível' : 'Link inacessível ou erro de conexão';
+    } catch {
+        statusEl.textContent = '⚠️';
+    }
+}
+
 function renderMonth(month, specificIndex = null) {
     const allWeeks = fullMenuData[year][month] || [];
     editor.innerHTML = `<h2>📅 ${month.toUpperCase()} ${year}</h2>`;
+
+    const categories = [
+        { title: "🏠 Infantil / Creches", keys: ['creche-m-verde', 'creches'] },
+        { title: "🏫 Ensino Fundamental", keys: ['fundamental-braga', 'fundamental-anna', 'fundamental-aaugusto', 'fundamental-esther', 'fundamental-gtl'] },
+        { title: "🔬 Ensino Médio", keys: ['etec'] }
+    ];
 
     allWeeks.forEach((week, index) => {
         // Se uma semana específica foi selecionada no filtro, ignora as outras
@@ -132,16 +262,35 @@ function renderMonth(month, specificIndex = null) {
         const weekDiv = document.createElement('div');
         weekDiv.className = 'week-edit-card';
         
-        let linksHtml = '';
-        for (const [key, label] of Object.entries(linkLabels)) {
-            linksHtml += `
-                <div class="input-group admin-input-group school-input-group" data-school-type="${key}">
-                    <label><span class="school-icon">${label.icon}</span> ${label.text}:</label>
-                    <input type="text" value="${week.links[key] || '#'}" 
-                        data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
+        let categoriesHtml = '';
+        categories.forEach(cat => {
+            let inputsHtml = '';
+            cat.keys.forEach(key => {
+                const label = linkLabels[key];
+                inputsHtml += `
+                    <div class="input-group admin-input-group school-input-group" data-school-type="${key}">
+                        <label class="compact-label"><span class="school-icon" style="cursor: pointer;" title="Clique para testar este link">${label.icon}</span> ${label.text}:</label>
+                        <div class="compact-input-wrapper">
+                            <input type="text" value="${week.links[key] || '#'}" 
+                                data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
+                            <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;"></span>
+                        </div>
+                    </div>
+                `;
+            });
+            categoriesHtml += `
+                <div class="admin-category-section">
+                    <div class="admin-category-header">
+                        <h4 class="admin-category-title">${cat.title}</h4>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-small action-toggle-category" title="Ocultar/Expandir Categoria">🔽</button>
+                            <button class="btn-small action-bulk-paste" data-keys="${cat.keys.join(',')}" data-index="${index}" title="Colar mesmo link para toda esta categoria">📋 Colar p/ todos</button>
+                        </div>
+                    </div>
+                    <div class="admin-inputs-grid">${inputsHtml}</div>
                 </div>
             `;
-        }
+        });
 
         weekDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 5px;">
@@ -160,9 +309,18 @@ function renderMonth(month, specificIndex = null) {
                     </label>
                 </div>
             </div>
-            ${linksHtml}
+            ${categoriesHtml}
         `;
         editor.appendChild(weekDiv);
+    });
+
+    // Listener para Ocultar/Expandir categorias
+    editor.querySelectorAll('.action-toggle-category').forEach(btn => {
+        btn.onclick = (e) => {
+            const section = e.target.closest('.admin-category-section');
+            section.classList.toggle('collapsed');
+            e.target.textContent = section.classList.contains('collapsed') ? '▶️' : '🔽';
+        };
     });
 
     // Listeners para os novos botões de ação rápida
@@ -176,11 +334,43 @@ function renderMonth(month, specificIndex = null) {
         };
     });
 
+    // Listener para colagem em massa por categoria
+    editor.querySelectorAll('.action-bulk-paste').forEach(btn => {
+        btn.onclick = async (e) => {
+            const keys = e.target.dataset.keys.split(',');
+            const idx = e.target.dataset.index;
+            const link = prompt(`Digite ou cole o link para aplicar a todos em "${e.target.previousElementSibling.innerText}":`);
+            
+            if (link !== null) {
+                const cleanedLink = cleanGoogleUrl(link.trim()) || '#';
+                keys.forEach(key => {
+                    fullMenuData[year][month][idx].links[key] = cleanedLink;
+                });
+                hasUnsavedChanges = true;
+                renderMonth(month, specificIndex);
+                showToast("Links atualizados na categoria!", "info");
+            }
+        };
+    });
+
     editor.querySelectorAll('.action-copy').forEach(btn => {
         btn.onclick = (e) => {
             const idx = parseInt(e.target.dataset.index);
             fullMenuData[year][month][idx].links = { ...fullMenuData[year][month][idx - 1].links };
             renderMonth(month, specificIndex);
+        };
+    });
+
+    // Listener para abrir o link ao clicar no ícone da escola
+    editor.querySelectorAll('.school-icon').forEach(icon => {
+        icon.onclick = (e) => {
+            const input = e.target.closest('.school-input-group').querySelector('.link-input');
+            const url = input.value.trim();
+            if (isValidUrl(url) && url !== '#') {
+                window.open(url, '_blank');
+            } else if (url !== '#') {
+                showToast("⚠️ O link atual é inválido ou não foi preenchido (#).", 'warning');
+            }
         };
     });
 
@@ -190,23 +380,31 @@ function renderMonth(month, specificIndex = null) {
         input.oninput = (e) => {
             const { month, index, key } = e.target.dataset;
             fullMenuData[year][month][index].links[key] = e.target.value;
+            hasUnsavedChanges = true;
+            updateDashboard();
             validateInput(e.target);
         };
+        // Verifica acessibilidade ao perder o foco (blur) ou ao carregar
+        input.onblur = () => checkAccessibility(input);
+        checkAccessibility(input);
     });
 
     editor.querySelectorAll('.active-checkbox').forEach(cb => {
         cb.onchange = (e) => {
             const { month, index } = e.target.dataset;
             fullMenuData[year][month][index].active = e.target.checked;
+            hasUnsavedChanges = true;
         };
     });
+
+    updateDashboard(); // Garante que o dashboard atualize após ações de massa (limpar, copiar, etc)
 }
 
 async function saveData(notify = false) {
     // Bloqueia o salvamento se houver URLs inválidas
     const invalidInputs = editor.querySelectorAll('.link-input.invalid-link');
     if (invalidInputs.length > 0) {
-        alert("⚠️ Existem URLs inválidas. Corrija os campos destacados em vermelho antes de salvar.");
+        showToast("⚠️ Existem URLs inválidas. Corrija os campos destacados em vermelho antes de salvar.", 'error');
         invalidInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
         invalidInputs[0].focus();
         return;
@@ -214,7 +412,7 @@ async function saveData(notify = false) {
 
     const btn = notify ? document.getElementById('notify-btn') : document.getElementById('save-btn');
     const originalText = btn.innerText;
-    btn.innerText = "⏳ Salvando...";
+    btn.innerHTML = '<span class="btn-spinner"></span> Salvando...';
     btn.disabled = true;
 
     try {
@@ -232,25 +430,162 @@ async function saveData(notify = false) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mes: month.charAt(0).toUpperCase() + month.slice(1) })
                 });
-                alert("✅ Alterações salvas e notificações enviadas!");
+                showToast("✅ Alterações salvas e notificações enviadas!", 'success');
             } else {
-                alert("✅ Alterações salvas com sucesso!");
+                showToast("✅ Alterações salvas com sucesso!", 'success');
             }
+            hasUnsavedChanges = false;
         } else {
-            alert("❌ Erro ao salvar dados no servidor.");
+            showToast("❌ Erro ao salvar dados no servidor.", 'error');
         }
     } catch (err) {
-        alert("❌ Falha na conexão com o servidor.");
+        showToast("❌ Falha na conexão com o servidor.", 'error');
     } finally {
         btn.innerText = originalText;
         btn.disabled = false;
     }
 }
 
+/**
+ * Exibe uma notificação toast na tela.
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {'success'|'error'|'warning'|'info'} type - O tipo de notificação.
+ * @param {number} duration - Duração em milissegundos antes de desaparecer.
+ */
+function showToast(message, type = 'info', duration = 3000) {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        console.warn('Toast container não encontrado. Exibindo alert:', message);
+        alert(message);
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    
+    toastContainer.appendChild(toast);
+
+    // Força o reflow para a animação de entrada
+    void toast.offsetWidth; 
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }, duration);
+}
+
+/**
+ * Inicializa o tema (claro/escuro) baseado na preferência salva ou do sistema.
+ */
+function initTheme() {
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const docElement = document.documentElement;
+
+    const applyTheme = (theme) => {
+        if (theme === 'dark') {
+            docElement.classList.add('dark-mode');
+            if (themeToggleButton) themeToggleButton.textContent = '☀️';
+        } else {
+            docElement.classList.remove('dark-mode');
+            if (themeToggleButton) themeToggleButton.textContent = '🌙';
+        }
+    };
+
+    const toggleTheme = () => {
+        const currentTheme = docElement.classList.contains('dark-mode') ? 'light' : 'dark';
+        localStorage.setItem('theme', currentTheme);
+        applyTheme(currentTheme);
+    };
+
+    const savedTheme = localStorage.getItem('theme');
+    const themeToApply = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(themeToApply);
+
+    if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', toggleTheme);
+    }
+}
+
+/**
+ * Busca e exibe o histórico de alterações no modal
+ */
+async function showAuditLog() {
+    const modal = document.getElementById('audit-modal');
+    const list = document.getElementById('audit-log-list');
+    const apiUrl = (['5500', '5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5000/api' : '/api';
+
+    list.innerHTML = '<li>Carregando histórico...</li>';
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+
+    try {
+        const res = await fetch(`${apiUrl}/audit-log`);
+        const logs = await res.json();
+
+        if (logs.length === 0) {
+            list.innerHTML = '<li>Nenhum registro encontrado.</li>';
+            return;
+        }
+
+        list.innerHTML = logs.map(log => {
+            const date = new Date(log.timestamp).toLocaleString('pt-BR');
+            return `
+                <li>
+                    <strong>${date}</strong><br>
+                    <span style="color: var(--text-color-muted)">Usuário:</span> ${log.user}<br>
+                    <span style="color: var(--primary-color)">Ação:</span> ${log.action}
+                </li>
+            `;
+        }).join('');
+    } catch (err) {
+        list.innerHTML = '<li>Erro ao carregar histórico.</li>';
+    }
+}
+
+document.getElementById('view-history-btn').onclick = showAuditLog;
+document.getElementById('close-audit-modal').onclick = () => {
+    const modal = document.getElementById('audit-modal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+};
+
 document.getElementById('save-btn').onclick = () => saveData(false);
 document.getElementById('notify-btn').onclick = () => {
-    if (!monthSelect.value) return alert("Selecione um mês antes de notificar.");
+    if (!monthSelect.value) {
+        showToast("Selecione um mês antes de notificar.", 'warning');
+        return;
+    }
     if (confirm("Deseja salvar e enviar notificação PUSH para todos os usuários?")) saveData(true);
 };
 
-document.addEventListener('DOMContentLoaded', init);
+// Alerta o usuário se houver alterações não salvas antes de fechar a aba
+window.onbeforeunload = (e) => {
+    if (hasUnsavedChanges) {
+        e.preventDefault();
+        return "Você tem alterações não salvas. Deseja realmente sair?";
+    }
+};
+
+/**
+ * Inicializa o botão de voltar ao topo
+ */
+function initBackToTop() {
+    const backToTopButton = document.getElementById("back-to-top");
+    if (!backToTopButton) return;
+
+    window.addEventListener("scroll", () => {
+        const shouldShow = window.scrollY > 300;
+        backToTopButton.classList.toggle("show", shouldShow);
+    }, { passive: true });
+
+    backToTopButton.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme(); // Carrega o tema imediatamente para evitar "flash" de branco
+    initBackToTop();
+    init();
+});

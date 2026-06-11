@@ -49,9 +49,18 @@ if (publicVapidKey && privateVapidKey) {
 }
 
 // 2. Armazenamento temporário (Em produção, use um Banco de Dados como MongoDB ou SQLite)
+const SUBS_FILE = path.join(__dirname, 'subscriptions.json');
 let subscriptions = [];
 
+// Carrega inscrições existentes do arquivo, se houver
+try {
+    if (fs.existsSync(SUBS_FILE)) {
+        subscriptions = JSON.parse(fs.readFileSync(SUBS_FILE, 'utf8'));
+    }
+} catch (e) { console.error("Erro ao carregar inscrições:", e); }
+
 const MENU_FILE = path.join(__dirname, 'menu-links.json');
+const LOG_FILE = path.join(__dirname, 'audit-log.json');
 
 // Rota para ler o cardápio atual (usado pelo Admin)
 app.get('/api/menu', loginLimiter, authMiddleware, (req, res) => {
@@ -84,6 +93,21 @@ app.post('/api/menu', loginLimiter, authMiddleware, (req, res) => {
     fs.writeFile(MENU_FILE, JSON.stringify(menuData, null, 4), 'utf8', (err) => {
         if (err) return res.status(500).json({ error: 'Erro ao salvar arquivo JSON' });
         console.log('Cardápio atualizado com sucesso via Admin.');
+
+        // Grava no log de auditoria
+        const logEntry = {
+            user: req.headers['x-admin-user'] || 'Desconhecido',
+            action: 'Atualização do Cardápio',
+            timestamp: new Date().toISOString()
+        };
+
+        let logs = [];
+        if (fs.existsSync(LOG_FILE)) {
+            try { logs = JSON.parse(fs.readFileSync(LOG_FILE, 'utf8')); } catch(e) {}
+        }
+        logs.push(logEntry);
+        fs.writeFileSync(LOG_FILE, JSON.stringify(logs.slice(-100), null, 4)); // Mantém últimos 100
+
         res.json({ success: true });
     });
 });
@@ -93,11 +117,41 @@ app.get('/api/env-status', loginLimiter, authMiddleware, (req, res) => {
     res.json({ isDevelopment: process.env.NODE_ENV === 'development' });
 });
 
+// Rota para ler o histórico de alterações
+app.get('/api/audit-log', loginLimiter, authMiddleware, (req, res) => {
+    if (!fs.existsSync(LOG_FILE)) return res.json([]);
+    fs.readFile(LOG_FILE, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ error: 'Erro ao ler log' });
+        try {
+            const logs = JSON.parse(data);
+            res.json(logs.reverse().slice(0, 50)); // Retorna os últimos 50 logs
+        } catch (e) { res.json([]); }
+    });
+});
+
+// Rota para verificar se uma URL externa está acessível (Proxy Check)
+app.post('/api/proxy-check', loginLimiter, authMiddleware, async (req, res) => {
+    const { url } = req.body;
+    if (!url || url === '#' || url.trim() === '') {
+        return res.json({ reachable: false });
+    }
+
+    try {
+        // Tenta uma requisição HEAD (mais leve) com timeout de 5 segundos
+        const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+        res.json({ reachable: response.ok });
+    } catch (error) {
+        res.json({ reachable: false });
+    }
+});
+
 app.post('/api/subscribe', (req, res) => {
     const { subscription } = req.body;
     // Evita duplicatas simples
     if (!subscriptions.find(s => s.endpoint === subscription.endpoint)) {
         subscriptions.push(subscription);
+        // Salva a nova lista no arquivo
+        fs.writeFile(SUBS_FILE, JSON.stringify(subscriptions, null, 4), (err) => { if(err) console.error(err); });
     }
     res.status(201).json({});
 });
@@ -131,8 +185,6 @@ app.listen(PORT, async () => {
     const url = `http://localhost:${PORT}/admin.html`;
     console.log(`🚀 Servidor Administrativo rodando em: ${url}`);
 
-    // Abre o navegador automaticamente ao iniciar o servidor
-    await open(url);
     // Abre o navegador automaticamente apenas em modo de desenvolvimento
     if (process.env.NODE_ENV === 'development') {
         await open(url);
