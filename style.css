@@ -682,6 +682,21 @@
         display: none; /* Oculto por padrão */
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
+
+    /* Botões pequenos de ação no Admin */
+    .btn-small {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid var(--medium-gray);
+        background: var(--surface-color);
+        color: var(--text-color);
+        transition: all 0.2s;
+        font-weight: 600;
+    }
+    .btn-small:hover { background: var(--background-color); border-color: var(--primary-color); }
+    .action-clear:hover { color: #dc3545; border-color: #dc3545; }
 }
 
 /* Media Queries para Responsividade */

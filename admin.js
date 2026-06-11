@@ -92,7 +92,13 @@ monthSelect.addEventListener('change', (e) => {
         fullMenuData[year][month].forEach((week, index) => {
             const opt = document.createElement('option');
             opt.value = index;
-            opt.textContent = week.title;
+            // Reformatar o título para destacar as datas
+            const parts = week.title.split(' - ');
+            if (parts.length === 2) {
+                opt.textContent = `${parts[0]} (${parts[1]})`; // Ex: "1ª SEM. (02/02 a 06/02)"
+            } else {
+                opt.textContent = week.title; // Fallback se o formato for diferente
+            }
             weekSelect.appendChild(opt);
         });
         
@@ -139,16 +145,43 @@ function renderMonth(month, specificIndex = null) {
 
         weekDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 5px;">
-                <h3 style="margin:0">${week.title}</h3>
-                <label style="cursor:pointer; font-size: 0.9rem;">
-                    <input type="checkbox" ${week.active ? 'checked' : ''} 
-                        data-month="${month}" data-index="${index}" class="active-checkbox"> 
-                    Exibir no App
-                </label>
+                <div>
+                    <h3 style="margin:0">${week.title}</h3>
+                    <div class="week-toolbar" style="margin-top: 5px; display: flex; gap: 8px;">
+                        <button class="btn-small action-clear" data-index="${index}" title="Limpar todos os links desta semana">🗑️ Limpar</button>
+                        ${index > 0 ? `<button class="btn-small action-copy" data-index="${index}" title="Copiar links da semana anterior">📋 Copiar da Anterior</button>` : ''}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <label style="cursor:pointer; font-size: 0.8rem; display: block; font-weight: bold;">
+                        <input type="checkbox" ${week.active ? 'checked' : ''} 
+                            data-month="${month}" data-index="${index}" class="active-checkbox"> 
+                        Exibir no App
+                    </label>
+                </div>
             </div>
             ${linksHtml}
         `;
         editor.appendChild(weekDiv);
+    });
+
+    // Listeners para os novos botões de ação rápida
+    editor.querySelectorAll('.action-clear').forEach(btn => {
+        btn.onclick = (e) => {
+            const idx = e.target.dataset.index;
+            if (confirm("Limpar todos os campos desta semana?")) {
+                Object.keys(fullMenuData[year][month][idx].links).forEach(k => fullMenuData[year][month][idx].links[k] = '#');
+                renderMonth(month, specificIndex);
+            }
+        };
+    });
+
+    editor.querySelectorAll('.action-copy').forEach(btn => {
+        btn.onclick = (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            fullMenuData[year][month][idx].links = { ...fullMenuData[year][month][idx - 1].links };
+            renderMonth(month, specificIndex);
+        };
     });
 
     // Listeners para salvar alterações em tempo real no objeto local
