@@ -1,0 +1,11 @@
+{
+  "watch": ["server.js", "script.js"],
+  "ext": "js,json",
+  "ignore": [
+    "menu-links.json",
+    "backups/*",
+    "node_modules/*",
+    "*.test.js"
+  ],
+  "delay": "500"
+}

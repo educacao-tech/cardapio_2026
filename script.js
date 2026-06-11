@@ -657,8 +657,8 @@ async function setupPushNotifications(registration) {
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
 
-        // Substitua 'SUA_CHAVE_VAPID_PUBLICA_AQUI' pela sua chave real
-        const vapidPublicKey = 'SUA_CHAVE_VAPID_PUBLICA_AQUI';
+        // Esta chave deve ser a 'publicKey' gerada no seu servidor Node.js
+        const vapidPublicKey = 'BPoKCZuBpJ-g5oLho2InYbeTD0zFCajVglfB0xVyvMVMGRsnHfWOx-EmkEqVpQuMn04F9CvDvICLD5Zn5YcbfzI'; // <--- Substitua esta linha
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
 
         const subscription = await registration.pushManager.subscribe({
@@ -666,11 +666,15 @@ async function setupPushNotifications(registration) {
             applicationServerKey: convertedVapidKey
         });
 
-        console.log('Usuário inscrito no Push:', JSON.stringify(subscription));
-        
-        // AQUI VOCÊ DEVE ENVIAR O OBJETO 'subscription' PARA O SEU SERVIDOR
-        // via fetch('sua-api.com/subscribe', { method: 'POST', body: ... })
-        
+        // Envia a inscrição para o seu servidor para que ele saiba para quem mandar mensagens
+        await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ subscription })
+        });
+
     } catch (err) {
         console.error('Erro ao inscrever para notificações push:', err);
     }

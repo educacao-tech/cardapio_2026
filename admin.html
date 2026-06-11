@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo - Cardápio</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 800px; margin: 2rem auto; padding: 1rem; background: var(--surface-color); border-radius: 12px; }
+        .week-edit-card { border: 1px solid var(--medium-gray); padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+        .input-group { margin-bottom: 0.5rem; display: flex; flex-direction: column; }
+        input { padding: 8px; border-radius: 4px; border: 1px solid var(--medium-gray); width: 100%; }
+        label { font-size: 0.8rem; font-weight: bold; margin-bottom: 2px; }
+        .actions { position: sticky; bottom: 0; background: var(--surface-color); padding: 1rem; border-top: 2px solid var(--primary-color); display: flex; gap: 1rem; }
+        .logout-btn { background-color: #dc3545; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* Estilos do Overlay de Login */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--background-color); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-box {
+            background: var(--surface-color); padding: 2rem; border-radius: 12px;
+            box-shadow: 0 4px 20px var(--shadow-color); text-align: center; width: 320px;
+        }
+        .btn-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="admin-page">
+    <div id="dev-mode-banner" class="dev-mode-banner">
+        ⚠️ MODO DE DESENVOLVIMENTO ATIVO - Funcionalidades de segurança desabilitadas.
+    </div>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Acesso Restrito</h2>
+            <div class="input-group" style="text-align: left;">
+                <label for="admin-pwd">Senha do Administrador:</label>
+                <div class="password-field-container"> 
+                    <input type="password" id="admin-pwd" placeholder="Mínimo 6 caracteres..." minlength="6">
+                    <button type="button" id="toggle-password-visibility" class="toggle-password-btn" aria-label="Mostrar senha">👁️</button>
+                </div>
+                <div id="password-strength-wrapper" style="display: none; margin-top: 8px;">
+                    <div style="height: 4px; background: var(--medium-gray); border-radius: 2px; overflow: hidden;">
+                        <div id="strength-bar" style="height: 100%; width: 0; transition: width 0.3s ease, background-color 0.3s ease;"></div>
+                    </div>
+                    <span id="strength-text" style="font-size: 0.7rem; font-weight: bold; margin-top: 2px; display: block; text-align: left;"></span>
+                </div> 
+                <span id="caps-lock-warning" style="color: #fd7e14; font-size: 0.7rem; display: none; margin-top: 4px; font-weight: bold;">⚠️ CapsLock Ativado!</span>
+                <span id="password-error" style="color: #dc3545; font-size: 0.7rem; display: none; margin-top: 4px;">A senha deve ter no mínimo 6 caracteres.</span>
+            </div>
+            <div id="2fa-container" style="display: none; margin-top: 1rem; border-top: 1px solid var(--medium-gray); padding-top: 1rem; text-align: left;">
+                <label for="admin-2fa">Código Enviado por E-mail:</label>
+                <input type="text" id="admin-2fa" placeholder="6 dígitos" maxlength="6">
+            </div>
+            <div id="captcha-container" style="display: none; margin-top: 1rem; border-top: 1px solid var(--medium-gray); padding-top: 1rem; text-align: left;">
+                <label id="captcha-label" style="font-size: 0.8rem; font-weight: bold;"></label>
+                <input type="number" id="captcha-ans" placeholder="Resposta">
+            </div>
+            <button id="login-btn" class="button creche-m-verde" style="width: 100%; margin-top: 1rem;">Entrar</button>
+        </div>
+    </div>
+
+    <script>
+        let currentCaptchaToken = null;
+        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos em milissegundos
+        let errorTimeoutId = null; // Variável para armazenar o ID do timeout do erro
+
+        // Resolve o problema do 404: se estiver no Live Server (5500), aponta para o Node (5000)
+        const getApiUrl = (endpoint) => {
+            const base = (['5500', '5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5000' : '';
+            return `${base}${endpoint}`;
+        };
+
+        // Atualiza o timestamp da última atividade
+        const updateActivity = () => {
+            if (sessionStorage.getItem('admin_token')) {
+                sessionStorage.setItem('last_activity', Date.now());
+            }
+        };
+
+        // Verifica se a sessão expirou por inatividade
+        const checkInactivity = () => {
+            const lastActivity = sessionStorage.getItem('last_activity');
+            const token = sessionStorage.getItem('admin_token');
+            if (token && lastActivity) {
+                if (Date.now() - parseInt(lastActivity) > SESSION_TIMEOUT) {
+                    sessionStorage.removeItem('admin_token');
+                    sessionStorage.removeItem('last_activity');
+                    alert("Sua sessão expirou devido à inatividade. Por favor, faça login novamente.");
+                    location.reload();
+                }
+            }
+        };
+
+        // Função para disparar o efeito visual de erro
+        const triggerShake = () => {
+            const loginBox = document.querySelector('.login-box');
+            loginBox.classList.remove('shake');
+            void loginBox.offsetWidth; 
+            loginBox.classList.add('shake');
+        };
+
+        // Função para exibir e ocultar a mensagem de erro automaticamente
+        const displayErrorMessage = (message) => {
+            const errorMsg = document.getElementById('password-error');
+            if (errorMsg) errorMsg.innerText = message;
+            errorMsg.style.display = 'block';
+            if (errorTimeoutId) clearTimeout(errorTimeoutId);
+            errorTimeoutId = setTimeout(() => errorMsg.style.display = 'none', 5000); // Oculta após 5 segundos
+        };
+
+        async function showCaptchaUI() {
+            const res = await originalFetch(getApiUrl('/api/get-captcha'));
+            const data = await res.json();
+            currentCaptchaToken = data.token;
+            document.getElementById('captcha-label').innerText = `Segurança: ${data.question}`;
+            document.getElementById('captcha-container').style.display = 'block';
+            document.getElementById('password-error').innerText = "Muitas falhas. Resolva o cálculo.";
+            document.getElementById('password-error').style.display = 'block';
+        }
+
+        // Wrapper para interceptar todas as chamadas fetch e injetar o token de auth
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+            const token = sessionStorage.getItem('admin_token');
+            const email = sessionStorage.getItem('admin_email');
+            const twoFa = sessionStorage.getItem('admin_2fa');
+            
+            checkInactivity(); // Valida inatividade antes de qualquer requisição
+
+            const cAns = sessionStorage.getItem('captcha_ans');
+
+            if (token) {
+                const options = args[1] || {};
+                options.headers = options.headers || {};
+                options.headers['x-admin-token'] = token;
+                options.headers['x-admin-user'] = email;
+                if (twoFa) options.headers['x-admin-2fa'] = twoFa;
+                if (cAns) options.headers['x-captcha-ans'] = cAns;
+                if (currentCaptchaToken) options.headers['x-captcha-token'] = currentCaptchaToken;
+                args[1] = options;
+                
+                updateActivity(); // Registra atividade em ações de rede bem-sucedidas
+            }
+
+            const response = await originalFetch(...args);
+
+            if (response.status === 401) {
+                const data = await response.clone().json().catch(() => ({}));
+                triggerShake();
+                document.getElementById('login-overlay').style.display = 'flex';
+                
+                const errorMsg = document.getElementById('password-error');
+                const pwdInput = document.getElementById('admin-pwd');
+
+                if (errorMsg) {
+                    displayErrorMessage(data.error || "Senha ou Captcha incorretos.");
+                }
+
+                if (data.require2FA) {
+                    document.getElementById('2fa-container').style.display = 'block';
+                    document.getElementById('admin-2fa').focus();
+                }
+
+                if (pwdInput) {
+                    pwdInput.style.borderColor = '#dc3545';
+                    pwdInput.value = ''; // Limpa o campo após erro 401
+                    pwdInput.focus();    // Devolve o foco para nova tentativa
+                }
+
+                if (data.requireCaptcha) {
+                    showCaptchaUI();
+                } else {
+                    sessionStorage.removeItem('admin_token');
+                    sessionStorage.removeItem('admin_email');
+                    sessionStorage.removeItem('admin_2fa');
+                }
+                // Removemos o reload automático para que o usuário veja a animação e o erro
+            }
+            return response;
+        };
+
+        // Função unificada para realizar o login
+        const performLogin = () => {
+            const pwdInput = document.getElementById('admin-pwd');
+            const twoFaInput = document.getElementById('admin-2fa');
+            const captchaInput = document.getElementById('captcha-ans');
+            const errorMsg = document.getElementById('password-error');
+            const loginBtn = document.getElementById('login-btn');
+            const email = 'madscold@gmail.com'; // E-mail fixo conforme configurado no servidor
+            const pwd = pwdInput.value.trim(); // Remove espaços acidentais
+            const twoFa = twoFaInput.value.trim();
+
+            if (pwd.length < 6) {
+                triggerShake();
+                displayErrorMessage("A senha deve ter no mínimo 6 caracteres.");
+                pwdInput.style.borderColor = '#dc3545';
+                return;
+            }
+
+            errorMsg.style.display = 'none';
+            pwdInput.style.borderColor = '';
+            loginBtn.innerHTML = '<span class="btn-spinner"></span> Verificando...';
+            loginBtn.disabled = true;
+
+            sessionStorage.setItem('admin_token', pwd);
+            sessionStorage.setItem('admin_email', email);
+            if (twoFa) {
+                sessionStorage.setItem('admin_2fa', twoFa);
+            }
+            if (captchaInput.value) {
+                sessionStorage.setItem('captcha_ans', captchaInput.value.trim());
+            }
+            updateActivity(); // Inicia o timer no momento do login bem-sucedido
+
+            // Tenta buscar a API. Se falhar, verifica se o servidor está na porta 5000
+            fetch(getApiUrl('/api/menu')).then(async (res) => {
+                if (res.ok) {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    if (typeof init === 'function') init();
+                } else if (res.status !== 401) {
+                    const isJson = res.headers.get('content-type')?.includes('application/json');
+                    const data = isJson ? await res.clone().json().catch(() => ({ balance:0 })) : {};
+                    
+                    displayErrorMessage(data.error || `Erro ${res.status}: Falha na comunicação.`);
+                    triggerShake();
+                    console.error('Erro na autenticação:', res.status, res.statusText);
+                }
+            }).catch(err => {
+                const target = getApiUrl('/api/menu');
+                displayErrorMessage(`Não foi possível conectar ao servidor em ${target}. Certifique-se de que o comando 'node server.js' está rodando.`);
+                triggerShake();
+                pwdInput.value = '';
+                pwdInput.focus();
+            }).finally(() => {
+                loginBtn.innerText = "Entrar";
+                loginBtn.disabled = false;
+            });
+        };
+
+        // Atribui o evento de clique ao botão
+        document.getElementById('login-btn').onclick = performLogin;
+
+        // Permite enviar o formulário ao pressionar Enter nos campos de texto
+        const handleEnterKey = (e) => { if (e.key === 'Enter') performLogin(); };
+        document.getElementById('admin-pwd').onkeydown = handleEnterKey;
+        document.getElementById('admin-2fa').onkeydown = handleEnterKey;
+        document.getElementById('captcha-ans').onkeydown = handleEnterKey;
+
+        // Não escondemos mais o overlay automaticamente; o admin.js/init cuidará disso se o token for válido
+        // if (sessionStorage.getItem('admin_token')) document.getElementById('login-overlay').style.display = 'none';
+
+        // Gerencia o clique no botão de Logout (Sair)
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('logout-btn').onclick = () => {
+                sessionStorage.removeItem('admin_token');
+                sessionStorage.removeItem('admin_email');
+                sessionStorage.removeItem('last_activity');
+                window.location.href = 'index.html'; // Redireciona para a página inicial
+            };
+
+            // Listeners para detectar atividade do usuário
+            ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(eventName => {
+                document.addEventListener(eventName, updateActivity, { passive: true });
+            });
+            setInterval(checkInactivity, 60000); // Checagem em background a cada 1 minuto
+
+            // Funcionalidade do botão "Ver Senha"
+            const passwordInput = document.getElementById('admin-pwd');
+            const togglePasswordBtn = document.getElementById('toggle-password-visibility');
+            if (passwordInput && togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    togglePasswordBtn.setAttribute('aria-label', type === 'password' ? 'Mostrar senha' : 'Esconder senha');
+                    togglePasswordBtn.textContent = type === 'password' ? '👁️' : '🙈'; // Alterna o ícone
+                });
+            }
+
+            // Foca automaticamente no campo de senha ao carregar a página
+            if (passwordInput) {
+                passwordInput.focus();
+                
+                const strengthWrapper = document.getElementById('password-strength-wrapper');
+                const strengthBar = document.getElementById('strength-bar');
+                const strengthText = document.getElementById('strength-text');
+
+                const updateStrength = (val) => {
+                    if (!val) {
+                        strengthWrapper.style.display = 'none';
+                        return;
+                    }
+                    strengthWrapper.style.display = 'block';
+                    
+                    let score = 0;
+                    if (val.length >= 6) score++;
+                    if (val.length >= 12) score++;
+                    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+                    if (/[0-9]/.test(val)) score++;
+                    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                    const levels = [
+                        { color: '#dc3545', width: '20%', label: 'Muito Fraca' },
+                        { color: '#fd7e14', width: '40%', label: 'Fraca' },
+                        { color: '#ffc107', width: '60%', label: 'Média' },
+                        { color: '#28a745', width: '80%', label: 'Boa' },
+                        { color: '#17a2b8', width: '100%', label: 'Excelente' }
+                    ];
+                    
+                    const level = levels[Math.max(0, Math.min(score, levels.length - 1))];
+                    strengthBar.style.width = level.width;
+                    strengthBar.style.backgroundColor = level.color;
+                    strengthText.innerText = `Força: ${level.label}`;
+                    strengthText.style.color = level.color;
+                };
+
+                const capsWarning = document.getElementById('caps-lock-warning');
+                const checkCapsLock = (e) => {
+                    const isCapsLock = e.getModifierState('CapsLock');
+                    capsWarning.style.display = isCapsLock ? 'block' : 'none';
+                };
+
+                passwordInput.oninput = () => {
+                    updateStrength(passwordInput.value);
+                    passwordInput.style.borderColor = '';
+                    if (errorTimeoutId) clearTimeout(errorTimeoutId); // Cancela o timeout se o usuário começar a digitar
+                    document.getElementById('password-error').style.display = 'none';
+                };
+
+                passwordInput.addEventListener('keyup', checkCapsLock);
+                passwordInput.addEventListener('keydown', checkCapsLock);
+            }
+        });
+    </script>
+
+    <div class="admin-container">
+        <h1>Gerenciar Links de Cardápio</h1>
+        <div id="status-msg"></div>
+        
+        <div class="controls-wrapper">
+            <select id="select-month" disabled>
+                <option value="">Selecione um mês...</option>
+                <option value="janeiro">Janeiro</option>
+                <option value="fevereiro">Fevereiro</option>
+                <option value="março">Março</option>
+                <option value="abril">Abril</option>
+                <option value="maio">Maio</option>
+                <option value="junho">Junho</option>
+                <option value="julho">Julho</option>
+                <option value="agosto">Agosto</option>
+                <option value="setembro">Setembro</option>
+                <option value="outubro">Outubro</option>
+                <option value="novembro">Novembro</option>
+                <option value="dezembro">Dezembro</option>
+            </select>
+        </div>
+
+        <div id="editor-container">
+            <p>Selecione um mês para editar as semanas.</p>
+        </div>
+
+        <div class="actions">
+            <button id="save-btn" class="button creche-m-verde" style="flex: 1;">💾 Salvar Alterações</button>
+            <button id="notify-btn" class="button creches" style="flex: 1;">🔔 Salvar e Notificar Usuários</button>
+            <button id="logout-btn" class="logout-btn">Sair</button>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

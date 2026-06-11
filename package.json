@@ -1,0 +1,25 @@
+{
+  "name": "cardapio_2026",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento de cardápios para 2026",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "set NODE_ENV=development && nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "open": "^8.4.2",
+    "nodemailer": "^6.9.13",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
