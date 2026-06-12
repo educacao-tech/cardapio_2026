@@ -53,9 +53,22 @@ function updateDashboard() {
     });
 
     const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
+    const dashboardContainer = document.getElementById('admin-dashboard');
     const statPercent = document.getElementById('stat-percent');
+    const statAlerts = document.getElementById('stat-alerts');
+    const missingCountEl = document.getElementById('missing-count');
+    
     statPercent.textContent = `${percentage}%`;
     statPercent.style.color = percentage === 100 ? 'var(--btn-creche-m-verde)' : 'var(--primary-color)';
+    
+    const missingCount = totalLinks - filledLinks;
+    if (statAlerts && missingCountEl) {
+        statAlerts.style.display = missingCount > 0 ? 'flex' : 'none';
+        missingCountEl.textContent = missingCount;
+    }
+
+    // Melhora o tooltip com contagem detalhada
+    dashboardContainer.title = `Progresso: ${filledLinks}/${totalLinks} preenchidos. Faltam ${missingCount} links. ${hasUnsavedChanges ? '(Alterações pendentes)' : ''}`;
 }
 
 /**
@@ -313,6 +326,7 @@ function renderMonth(month, specificIndex = null) {
             if (confirm("Limpar todos os campos desta semana?")) {
                 Object.keys(fullMenuData[year][month][idx].links).forEach(k => fullMenuData[year][month][idx].links[k] = '#');
                 renderMonth(month, specificIndex);
+                hasUnsavedChanges = true;
             }
         };
     });
@@ -611,8 +625,44 @@ function initBackToTop() {
     backToTopButton.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+/**
+ * Localiza o próximo campo de link vazio, expande sua categoria se necessário, 
+ * e move o foco para ele.
+ */
+function goToNextEmptyLink() {
+    const inputs = Array.from(document.querySelectorAll('.link-input'));
+    const nextEmpty = inputs.find(input => input.value === '#' || input.value.trim() === '');
+    
+    if (nextEmpty) {
+        // Expande a categoria pai se estiver recolhida para que o foco funcione
+        const categorySection = nextEmpty.closest('.admin-category-section');
+        if (categorySection && categorySection.classList.contains('collapsed')) {
+            categorySection.classList.remove('collapsed');
+            const toggleBtn = categorySection.querySelector('.action-toggle-category');
+            if (toggleBtn) toggleBtn.textContent = '🔽';
+        }
+
+        // Move a tela suavemente para o campo
+        nextEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Pequeno delay para aguardar a rolagem/animação de expansão antes de focar
+        setTimeout(() => {
+            nextEmpty.focus();
+            // Efeito visual de destaque (utiliza a animação 'shake' já existente no CSS)
+            nextEmpty.classList.add('shake');
+            setTimeout(() => nextEmpty.classList.remove('shake'), 400);
+        }, 400);
+    } else {
+        showToast("✨ Excelente! Todos os links visíveis foram preenchidos.", "success");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTheme(); // Carrega o tema imediatamente para evitar "flash" de branco
     initBackToTop();
+    
+    const nextBtn = document.getElementById('next-empty-btn');
+    if (nextBtn) nextBtn.onclick = goToNextEmptyLink;
+
     init();
 });

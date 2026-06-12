@@ -736,9 +736,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid var(--medium-gray);
+        border-bottom: 2px solid var(--background-color);
         margin-bottom: 1.2rem;
-        padding-bottom: 8px;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px 8px 0 0;
     }
     .admin-category-title {
         font-size: 0.8rem;
@@ -774,6 +776,7 @@
     .link-input:focus {
         transform: scale(1.01);
         box-shadow: 0 4px 12px var(--shadow-color);
+        border-color: var(--primary-color);
     }
 
     /* Estilo para o status de acessibilidade no Admin */
