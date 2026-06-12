@@ -91,7 +91,10 @@ app.post('/api/menu', loginLimiter, authMiddleware, (req, res) => {
     }
 
     fs.writeFile(MENU_FILE, JSON.stringify(menuData, null, 4), 'utf8', (err) => {
-        if (err) return res.status(500).json({ error: 'Erro ao salvar arquivo JSON' });
+        if (err) {
+            console.error('❌ Erro crítico ao gravar o arquivo:', err);
+            return res.status(500).json({ error: 'Erro ao salvar arquivo JSON', details: err.message });
+        }
         console.log('Cardápio atualizado com sucesso via Admin.');
 
         // Grava no log de auditoria

@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "set NODE_ENV=development && nodemon server.js"
+    "dev": "set NODE_ENV=development && nodemon --ignore 'menu-links.json' --ignore 'audit-log.json' --ignore 'subscriptions.json' --ignore 'backups/*' server.js"
   },
   "keywords": [],
   "author": "",

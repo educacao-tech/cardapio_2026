@@ -42,22 +42,15 @@ function updateDashboard() {
     
     let totalLinks = weeks.length * schoolKeys.length;
     let filledLinks = 0;
-    const missingSchoolsMap = new Map(); // Usamos Map para guardar chave -> nome
 
     weeks.forEach(week => {
         schoolKeys.forEach(key => {
             const url = week.links[key];
             if (url && url !== '#' && url.trim() !== '') {
                 filledLinks++;
-            } else {
-                missingSchoolsMap.set(key, linkLabels[key].text);
             }
         });
     });
-
-    document.getElementById('stat-total').textContent = totalLinks;
-    document.getElementById('stat-filled').textContent = filledLinks;
-    document.getElementById('stat-missing').textContent = totalLinks - filledLinks;
 
     const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
     document.getElementById('stat-percent').textContent = `${percentage}%`;
@@ -66,35 +59,6 @@ function updateDashboard() {
     if (progressFill) {
         progressFill.style.width = `${percentage}%`;
         progressFill.style.backgroundColor = percentage === 100 ? 'var(--btn-creche-m-verde)' : 'var(--primary-color)';
-    }
-
-    const missingListEl = document.getElementById('missing-schools-list');
-    const missingContainer = document.getElementById('missing-schools-container');
-    if (missingListEl && missingContainer) {
-        missingListEl.innerHTML = '';
-        if (missingSchoolsMap.size > 0 && percentage < 100) {
-            missingContainer.style.display = 'block';
-            missingSchoolsMap.forEach((schoolName, schoolKey) => {
-                const badge = document.createElement('span');
-                badge.className = 'missing-school-badge';
-                badge.textContent = schoolName;
-                badge.title = `Clique para ir ao campo de ${schoolName}`;
-                
-                // Ao clicar, localiza o primeiro input vazio desta escola
-                badge.onclick = () => {
-                    const inputs = document.querySelectorAll(`.link-input[data-key="${schoolKey}"]`);
-                    const target = Array.from(inputs).find(i => !i.value || i.value === '#' || i.value.trim() === '');
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        setTimeout(() => target.focus(), 300); // Pequeno atraso para o scroll terminar
-                    }
-                };
-                
-                missingListEl.appendChild(badge);
-            });
-        } else {
-            missingContainer.style.display = 'none';
-        }
     }
 }
 
@@ -279,11 +243,12 @@ function renderMonth(month, specificIndex = null) {
                 `;
             });
             categoriesHtml += `
-                <div class="admin-category-section">
+                <div class="admin-category-section collapsed">
                     <div class="admin-category-header">
                         <h4 class="admin-category-title">${cat.title}</h4>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-small action-toggle-category" title="Ocultar/Expandir Categoria">🔽</button>
+
+                            <button class="btn-small action-toggle-category" title="Ocultar/Expandir Categoria">▶️</button>
                             <button class="btn-small action-bulk-paste" data-keys="${cat.keys.join(',')}" data-index="${index}" title="Colar mesmo link para toda esta categoria">📋 Colar p/ todos</button>
                         </div>
                     </div>
@@ -293,16 +258,16 @@ function renderMonth(month, specificIndex = null) {
         });
 
         weekDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 3px;">
                 <div>
-                    <h3 style="margin:0">${week.title}</h3>
-                    <div class="week-toolbar" style="margin-top: 5px; display: flex; gap: 8px;">
+                    <h3 style="margin:0; font-size: 1rem;">${week.title}</h3>
+                    <div class="week-toolbar" style="margin-top: 3px; display: flex; gap: 4px;">
                         <button class="btn-small action-clear" data-index="${index}" title="Limpar todos os links desta semana">🗑️ Limpar</button>
                         ${index > 0 ? `<button class="btn-small action-copy" data-index="${index}" title="Copiar links da semana anterior">📋 Copiar da Anterior</button>` : ''}
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <span style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 4px; color: var(--text-color-muted);">ATIVO</span>
+                    <span style="font-size: 0.65rem; font-weight: bold; display: block; margin-bottom: 2px; color: var(--text-color-muted);">ATIVO</span>
                     <label class="modern-switch">
                         <input type="checkbox" ${week.active ? 'checked' : ''} data-month="${month}" data-index="${index}" class="active-checkbox">
                         <span class="modern-slider"></span>

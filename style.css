@@ -93,7 +93,7 @@
         background-color: var(--surface-color);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        padding-block: 0.5rem;
+        padding-block: 0;
         padding-inline: 2rem;
         border-block-end: 1px solid var(--medium-gray);
         position: sticky;
@@ -124,11 +124,12 @@
 
     .main-header h1 {
         margin: 0;
-        margin-block-start: 0.25rem;
+        margin-block-start: 0;
         color: var(--text-color);
         text-align: center;
         /* Tipografia fluida: se ajusta ao tamanho da tela */
         font-size: clamp(1.3rem, 1rem + 1.5vw, 1.8rem);
+        line-height: 1.1;
     }
 
     .controls-wrapper {
@@ -139,7 +140,7 @@
         gap: 1rem;
         margin-bottom: 1rem;
         position: sticky;
-        top: 65px;
+        top: 45px;
         z-index: 95;
         background-color: var(--background-color);
         padding: 0.75rem 1rem;
@@ -685,8 +686,8 @@
 
     /* Botões pequenos de ação no Admin */
     .btn-small {
-        padding: 4px 10px;
-        font-size: 0.7rem;
+        padding: 2px 8px;
+        font-size: 0.65rem;
         border-radius: 6px;
         cursor: pointer;
         border: 1px solid var(--medium-gray);
@@ -699,12 +700,12 @@
     .action-clear:hover { color: #dc3545; border-color: #dc3545; }
 
     /* Interruptor Moderno (Switch) */
-    .modern-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .modern-switch { position: relative; display: inline-block; width: 36px; height: 20px; }
     .modern-switch input { opacity: 0; width: 0; height: 0; }
     .modern-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--medium-gray); transition: .4s; border-radius: 24px; }
-    .modern-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .modern-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     input:checked + .modern-slider { background-color: var(--primary-color); }
-    input:checked + .modern-slider:before { transform: translateX(20px); }
+    input:checked + .modern-slider:before { transform: translateX(16px); }
 
     /* Destaque sutil por tipo de escola no Admin */
     .admin-input-group[data-school-type="creche-m-verde"] label { color: var(--btn-creche-m-verde); }
@@ -881,29 +882,10 @@
 
     /* Dashboard de Estatísticas no Admin */
     .admin-dashboard {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-    .stat-card {
-        background: var(--surface-color);
-        padding: 1.25rem;
-        border-radius: 12px;
-        border: 1px solid var(--medium-gray);
-        text-align: center;
-        display: flex;
+        display: flex; /* Alterado para flex para melhor controle dos itens restantes */
         flex-direction: column;
-        gap: 5px;
-        box-shadow: 0 4px 6px var(--shadow-color);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    :root.dark-mode .stat-card {
-        box-shadow: 0 4px 6px var(--shadow-color);
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px var(--shadow-color);
+        gap: 0.75rem;
+        margin-bottom: 2rem;
     }
     .stat-label {
         font-size: 0.7rem;
@@ -911,14 +893,6 @@
         font-weight: 800;
         color: var(--text-color-muted);
         letter-spacing: 0.05em;
-    }
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--primary-color);
-    }
-    .stat-missing .stat-value {
-        color: #dc3545;
     }
 
     /* Barra de Progresso no Dashboard */
@@ -976,6 +950,36 @@
         box-shadow: 0 10px 30px var(--shadow-color);
     }
 
+    /* Título do mês fixo no Admin */
+    .month-header-admin {
+        position: sticky;
+        top: 90px; /* Ajustado para o novo cabeçalho sem espaços */
+        z-index: 90;
+        background-color: var(--surface-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+
+    /* Estado quando o cabeçalho está fixo no topo */
+    .month-header-admin.is-stuck {
+        padding: 0.75rem 1.5rem;
+        box-shadow: 0 5px 10px -3px var(--shadow-color);
+        border-bottom-width: 4px;
+        border-radius: 0 0 12px 12px;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    :root.dark-mode .month-header-admin.is-stuck {
+        background-color: rgba(30, 30, 30, 0.7);
+    }
+
     /* Ajustes para Tema Escuro no Admin */
     :root.dark-mode .actions {
         background: rgba(30, 30, 30, 0.8);
@@ -1010,7 +1014,7 @@
     }
 
     .admin-dashboard {
-        grid-template-columns: 1fr;
+        /* Flexbox já cuida da responsividade em coluna */
     }
 
     .search-container {
@@ -1022,7 +1026,7 @@
     }
 
     .main-container {
-        margin: 1rem auto;
+        margin: 0.5rem auto;
     }
 
     #back-to-top {
