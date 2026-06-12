@@ -36,7 +36,7 @@ function updateDashboard() {
         return;
     }
 
-    if (dashboard) dashboard.style.display = 'grid';
+    if (dashboard) dashboard.style.display = 'flex';
     const weeks = fullMenuData[year][month];
     const schoolKeys = Object.keys(linkLabels);
     
@@ -53,13 +53,9 @@ function updateDashboard() {
     });
 
     const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
-    document.getElementById('stat-percent').textContent = `${percentage}%`;
-    
-    const progressFill = document.getElementById('progress-fill');
-    if (progressFill) {
-        progressFill.style.width = `${percentage}%`;
-        progressFill.style.backgroundColor = percentage === 100 ? 'var(--btn-creche-m-verde)' : 'var(--primary-color)';
-    }
+    const statPercent = document.getElementById('stat-percent');
+    statPercent.textContent = `${percentage}%`;
+    statPercent.style.color = percentage === 100 ? 'var(--btn-creche-m-verde)' : 'var(--primary-color)';
 }
 
 /**
@@ -134,6 +130,17 @@ async function init(force = false) {
     } catch (err) {
         setEditorMessage('❌ Erro ao conectar com o servidor. Verifique se o login foi realizado.');
     }
+}
+
+/**
+ * Alterna o estado de todas as categorias do editor
+ */
+function toggleAllCategories(expand = true) {
+    editor.querySelectorAll('.admin-category-section').forEach(section => {
+        section.classList.toggle('collapsed', !expand);
+        const btn = section.querySelector('.action-toggle-category');
+        if (btn) btn.textContent = expand ? '🔽' : '▶️';
+    });
 }
 
 monthSelect.addEventListener('change', (e) => {
@@ -212,6 +219,15 @@ async function checkAccessibility(input) {
 function renderMonth(month, specificIndex = null) {
     const allWeeks = fullMenuData[year][month] || [];
     editor.innerHTML = `<h2>📅 ${month.toUpperCase()} ${year}</h2>`;
+    
+    // Adiciona botões de controle global
+    const globalActions = document.createElement('div');
+    globalActions.style = "margin-bottom: 1rem; display: flex; gap: 10px;";
+    globalActions.innerHTML = `
+        <button class="btn-small" onclick="toggleAllCategories(true)">📂 Expandir Todas Categorias</button>
+        <button class="btn-small" onclick="toggleAllCategories(false)">📁 Recolher Todas</button>
+    `;
+    editor.appendChild(globalActions);
 
     const categories = [
         { title: "🏠 Infantil / Creches", keys: ['creche-m-verde', 'creches'] },
@@ -238,6 +254,7 @@ function renderMonth(month, specificIndex = null) {
                             <input type="text" value="${week.links[key] || '#'}" 
                                 data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
                             <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;"></span>
+                            <button class="btn-small action-preview-pdf" title="Pré-visualizar PDF">👁️</button>
                         </div>
                     </div>
                 `;
@@ -282,9 +299,10 @@ function renderMonth(month, specificIndex = null) {
     // Listener para Ocultar/Expandir categorias
     editor.querySelectorAll('.action-toggle-category').forEach(btn => {
         btn.onclick = (e) => {
-            const section = e.target.closest('.admin-category-section');
+            e.preventDefault();
+            const section = e.currentTarget.closest('.admin-category-section');
             section.classList.toggle('collapsed');
-            e.target.textContent = section.classList.contains('collapsed') ? '▶️' : '🔽';
+            e.currentTarget.textContent = section.classList.contains('collapsed') ? '▶️' : '🔽';
         };
     });
 
@@ -339,6 +357,19 @@ function renderMonth(month, specificIndex = null) {
         };
     });
 
+    // Listener para pré-visualização de PDF
+    editor.querySelectorAll('.action-preview-pdf').forEach(btn => {
+        btn.onclick = (e) => {
+            const input = e.target.closest('.compact-input-wrapper').querySelector('.link-input');
+            const url = input.value.trim();
+            if (isValidUrl(url) && url !== '#') {
+                openPdfPreview(url);
+            } else {
+                showToast("⚠️ O link atual é inválido ou vazio (#).", 'warning');
+            }
+        };
+    });
+
     // Listeners para salvar alterações em tempo real no objeto local
     editor.querySelectorAll('.link-input').forEach(input => {
         validateInput(input); // Validação inicial ao carregar o mês
@@ -346,6 +377,7 @@ function renderMonth(month, specificIndex = null) {
             const { month, index, key } = e.target.dataset;
             fullMenuData[year][month][index].links[key] = e.target.value;
             hasUnsavedChanges = true;
+            document.getElementById('save-btn').classList.add('btn-dirty');
             updateDashboard();
             validateInput(e.target);
         };
@@ -400,6 +432,7 @@ async function saveData(notify = false) {
                 showToast("✅ Alterações salvas com sucesso!", 'success');
             }
             hasUnsavedChanges = false;
+            document.getElementById('save-btn').classList.remove('btn-dirty');
         } else {
             showToast("❌ Erro ao salvar dados no servidor.", 'error');
         }
@@ -510,11 +543,40 @@ async function showAuditLog() {
     }
 }
 
+/**
+ * Abre o modal de pré-visualização de PDF
+ */
+function openPdfPreview(url) {
+    let previewUrl = url;
+    
+    // Converte links do Google Drive para o formato de visualização incorporada (preview)
+    if (url.includes('drive.google.com')) {
+        previewUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+    }
+
+    const modal = document.getElementById('pdf-preview-modal');
+    const iframe = document.getElementById('pdf-preview-iframe');
+    
+    if (modal && iframe) {
+        iframe.src = previewUrl;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+}
+
 document.getElementById('view-history-btn').onclick = showAuditLog;
 document.getElementById('close-audit-modal').onclick = () => {
     const modal = document.getElementById('audit-modal');
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
+};
+
+document.getElementById('close-pdf-modal').onclick = () => {
+    const modal = document.getElementById('pdf-preview-modal');
+    const iframe = document.getElementById('pdf-preview-iframe');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+    iframe.src = ''; // Limpa o iframe para economizar recursos e parar carregamentos em background
 };
 
 document.getElementById('save-btn').onclick = () => saveData(false);

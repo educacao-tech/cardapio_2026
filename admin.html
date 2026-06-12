@@ -352,18 +352,6 @@
         <h1 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">🛠️ Painel Administrativo</h1>
         <div id="status-msg"></div>
 
-        <div id="admin-dashboard" class="admin-dashboard" style="display: none;">
-            <div class="progress-container" style="grid-column: 1 / -1; margin-top: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span class="stat-label">Progresso de Preenchimento</span>
-                    <span id="stat-percent" class="stat-label" style="color: var(--primary-color);">0%</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div id="progress-fill" class="progress-bar-fill"></div>
-                </div>
-            </div>
-        </div>
-        
         <div class="controls-wrapper" style="box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--medium-gray);">
             <select id="select-month" disabled>
                 <option value="">Selecione um mês...</option>
@@ -406,7 +394,25 @@
             </div>
         </div>
 
+        <!-- Modal de Pré-visualização de PDF -->
+        <div id="pdf-preview-modal" class="modal-overlay" aria-hidden="true">
+            <div class="modal-content" style="max-width: 90%; width: 90%; height: 90vh; display: flex; flex-direction: column;">
+                <div class="modal-header">
+                    <h2>📄 Pré-visualização do Documento</h2>
+                    <button id="close-pdf-modal" class="close-btn" aria-label="Fechar modal">✕</button>
+                </div>
+                <div class="modal-body" style="flex: 1; padding: 0;">
+                    <iframe id="pdf-preview-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: 0 0 12px 12px;"></iframe>
+                </div>
+            </div>
+        </div>
+
         <div class="actions">
+            <!-- Badge de Progresso Compacto no Rodapé -->
+            <div id="admin-dashboard" class="progress-badge-footer" style="display: none;" title="Progresso de Preenchimento">
+                <span id="stat-percent">0%</span>
+            </div>
+
             <button id="save-btn" class="button creche-m-verde" style="flex: 1;">💾 Salvar Alterações</button>
             <button id="notify-btn" class="button creches" style="flex: 1;">🔔 Salvar e Notificar Usuários</button>
             <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 50px;" title="Visualizar Site Público">👁️</a>
