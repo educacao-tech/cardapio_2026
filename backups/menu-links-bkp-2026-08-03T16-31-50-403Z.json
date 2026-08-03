@@ -384,6 +384,76 @@
                 }
             }
         ],
+        "julho": [
+            {
+                "weekId": "semana1-jul",
+                "title": "1ª SEM. - 06/07 a 10/07",
+                "startDate": "2026-07-06",
+                "endDate": "2026-07-10",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-jul",
+                "title": "2ª SEM. - 13/07 a 17/07",
+                "startDate": "2026-07-13",
+                "endDate": "2026-07-17",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana3-jul",
+                "title": "3ª SEM. - 20/07 a 24/07",
+                "startDate": "2026-07-20",
+                "endDate": "2026-07-24",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana4-jul",
+                "title": "4ª SEM. - 27/07 a 31/07",
+                "startDate": "2026-07-27",
+                "endDate": "2026-07-31",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            }
+        ],
         "agosto": [
             {
                 "weekId": "semana1-ago",
@@ -399,7 +469,7 @@
                     "fundamental-aaugusto": "https://drive.google.com/file/d/1zj2G9Uq-YDMTYc5SiM2xYuAMENo2czWr/view?usp=sharing",
                     "fundamental-esther": "https://drive.google.com/file/d/1rRxjA1udL2yrSQfT58PIJHqHxn2VP9Mw/view?usp=sharing",
                     "fundamental-gtl": "https://drive.google.com/file/d/1atYUsCKowg1PlBj8K5mUKtd4ZlSLQNP0/view?usp=sharing",
-                    "etec": "https://drive.google.com/file/d/13YVP_1uP0I3aoTJ2nNIau4-oHnU3ScX5/view?usp=sharing"
+                    "etec": "#"
                 }
             },
             {

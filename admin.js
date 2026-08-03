@@ -1,11 +1,82 @@
 let fullMenuData = {};
+let originalMenuData = {};
 let hasUnsavedChanges = false;
+let showOnlyPending = false;
 const year = "2026";
+const DRAFT_KEY = 'admin_menu_draft_2026';
 const editor = document.getElementById('editor-container');
 const monthSelect = document.getElementById('select-month');
 const weekSelect = document.getElementById('select-week');
 
 const accessibilityCache = new Map();
+
+/**
+ * Salva o rascunho atual no localStorage para recuperação automática
+ */
+function saveDraftToStorage() {
+    if (!hasUnsavedChanges || !monthSelect.value) return;
+    try {
+        const draft = {
+            month: monthSelect.value,
+            fullMenuData: fullMenuData,
+            timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) { console.warn('Erro ao salvar rascunho local:', e); }
+}
+
+/**
+ * Limpa o rascunho salvo do localStorage
+ */
+function clearDraftFromStorage() {
+    localStorage.removeItem(DRAFT_KEY);
+}
+
+/**
+ * Verifica se existe um rascunho salvo e exibe a barra de recuperação se necessário
+ */
+function checkDraftBanner() {
+    const draftStr = localStorage.getItem(DRAFT_KEY);
+    if (!draftStr) return;
+    try {
+        const draft = JSON.parse(draftStr);
+        if (!draft || !draft.timestamp) return;
+
+        const timeFormatted = new Date(draft.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        
+        let banner = document.getElementById('draft-recovery-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'draft-recovery-banner';
+            banner.className = 'draft-banner';
+            editor.prepend(banner);
+        }
+        
+        banner.innerHTML = `
+            <span>⚠️ Rascunho não salvo encontrado (Salvo às ${timeFormatted}). Deseja restaurar?</span>
+            <div class="draft-actions">
+                <button class="btn-small" id="restore-draft-btn">Restaurar Rascunho</button>
+                <button class="btn-small" id="discard-draft-btn" style="background:#dc3545; color:white; border-color:#dc3545;">Descartar</button>
+            </div>
+        `;
+
+        document.getElementById('restore-draft-btn').onclick = () => {
+            if (draft.fullMenuData) {
+                fullMenuData = JSON.parse(JSON.stringify(draft.fullMenuData));
+                hasUnsavedChanges = true;
+                document.getElementById('save-btn').classList.add('btn-dirty');
+                if (monthSelect.value) renderMonth(monthSelect.value);
+                showToast("✅ Rascunho restaurado com sucesso!", "success");
+            }
+        };
+
+        document.getElementById('discard-draft-btn').onclick = () => {
+            clearDraftFromStorage();
+            banner.remove();
+            showToast("Rascunho descartado.", "info");
+        };
+    } catch(e) {}
+}
 
 // Mapeamento amigável para os campos de links
 const linkLabels = {
@@ -123,9 +194,11 @@ async function init(force = false) {
         const res = await fetch(`${apiUrl}/menu`);
         if (res.ok) {
             fullMenuData = await res.json();
+            originalMenuData = JSON.parse(JSON.stringify(fullMenuData));
             setEditorMessage('✅ Dados carregados. Selecione um mês para começar.', 'success');
             monthSelect.disabled = false; // Habilita o seletor de mês
             document.getElementById('login-overlay').style.display = 'none';
+            checkDraftBanner();
 
             // Verifica o status do ambiente e exibe a tarja se for desenvolvimento
             const envRes = await fetch(`${apiUrl}/env-status`);
@@ -244,12 +317,25 @@ function renderMonth(month, specificIndex = null) {
     
     // Adiciona botões de controle global
     const globalActions = document.createElement('div');
-    globalActions.style = "margin-bottom: 1rem; display: flex; gap: 10px;";
+    globalActions.style = "margin-bottom: 1rem; display: flex; gap: 10px; flex-wrap: wrap;";
     globalActions.innerHTML = `
         <button class="btn-small" onclick="toggleAllCategories(true)">📂 Expandir Todas Categorias</button>
         <button class="btn-small" onclick="toggleAllCategories(false)">📁 Recolher Todas</button>
+        <button class="btn-small ${showOnlyPending ? 'btn-filter-active' : ''}" id="toggle-pending-filter">🎯 ${showOnlyPending ? 'Mostrando Apenas Pendentes (#)' : 'Filtrar Links Pendentes (#)'}</button>
     `;
     editor.appendChild(globalActions);
+
+    const pendingBtn = globalActions.querySelector('#toggle-pending-filter');
+    if (pendingBtn) {
+        pendingBtn.onclick = (e) => {
+            e.preventDefault();
+            showOnlyPending = !showOnlyPending;
+            renderMonth(month, specificIndex);
+            showToast(showOnlyPending ? "🎯 Exibindo apenas campos pendentes (#)" : "👁️ Exibindo todos os campos", "info");
+        };
+    }
+
+    checkDraftBanner();
 
     const categories = [
         { title: "🏠 Infantil / Creches", keys: ['creche-m-verde', 'creches'] },
@@ -257,9 +343,23 @@ function renderMonth(month, specificIndex = null) {
         { title: "🔬 Ensino Médio", keys: ['etec'] }
     ];
 
+    const schoolKeys = Object.keys(linkLabels);
+
     allWeeks.forEach((week, index) => {
         // Se uma semana específica foi selecionada no filtro, ignora as outras
         if (specificIndex !== null && index.toString() !== specificIndex.toString()) return;
+
+        // Progresso por semana
+        const totalWeekKeys = schoolKeys.length;
+        const filledWeekKeys = schoolKeys.filter(k => {
+            const url = week.links[k];
+            return isValidUrl(url) && url !== '#' && url && url.trim() !== '';
+        }).length;
+
+        const isWeekDone = filledWeekKeys === totalWeekKeys;
+        const badgeClass = isWeekDone ? 'badge-success' : (filledWeekKeys > 0 ? 'badge-warning' : 'badge-danger');
+        const badgeIcon = isWeekDone ? '✅' : (filledWeekKeys > 0 ? '⚠️' : '❌');
+        const badgeText = `${badgeIcon} ${filledWeekKeys}/${totalWeekKeys} Concluído`;
 
         const weekDiv = document.createElement('div');
         weekDiv.className = 'week-edit-card';
@@ -269,11 +369,15 @@ function renderMonth(month, specificIndex = null) {
             let inputsHtml = '';
             cat.keys.forEach(key => {
                 const label = linkLabels[key];
+                const linkVal = week.links[key] || '#';
+                const isPending = !linkVal || linkVal === '#' || linkVal.trim() === '';
+                const displayStyle = (showOnlyPending && !isPending) ? 'display: none;' : '';
+
                 inputsHtml += `
-                    <div class="input-group admin-input-group school-input-group" data-school-type="${key}">
+                    <div class="input-group admin-input-group school-input-group" data-school-type="${key}" style="${displayStyle}">
                         <label class="compact-label"><span class="school-icon" style="cursor: pointer;" title="Clique para testar este link">${label.icon}</span> ${label.text}:</label>
                         <div class="compact-input-wrapper">
-                            <input type="text" value="${week.links[key] || '#'}" 
+                            <input type="text" value="${linkVal}" 
                                 data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
                             <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;"></span>
                             <button class="btn-small action-preview-pdf" title="Pré-visualizar PDF">👁️</button>
@@ -297,12 +401,16 @@ function renderMonth(month, specificIndex = null) {
         });
 
         weekDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 3px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 3px; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <h3 style="margin:0; font-size: 1rem;">${week.title}</h3>
-                    <div class="week-toolbar" style="margin-top: 3px; display: flex; gap: 4px;">
+                    <h3 style="margin:0; font-size: 1rem; display: inline-flex; align-items: center;">
+                        ${week.title}
+                        <span class="week-progress-badge ${badgeClass}">${badgeText}</span>
+                    </h3>
+                    <div class="week-toolbar" style="margin-top: 3px; display: flex; gap: 4px; flex-wrap: wrap;">
                         <button class="btn-small action-clear" data-index="${index}" title="Limpar todos os links desta semana">🗑️ Limpar</button>
                         ${index > 0 ? `<button class="btn-small action-copy" data-index="${index}" title="Copiar links da semana anterior">📋 Copiar da Anterior</button>` : ''}
+                        <button class="btn-small action-undo-week" data-index="${index}" title="Restaurar os links salvos no servidor para esta semana">↩️ Desfazer</button>
                     </div>
                 </div>
                 <div style="text-align: right;">
@@ -334,8 +442,24 @@ function renderMonth(month, specificIndex = null) {
             const idx = e.target.dataset.index;
             if (confirm("Limpar todos os campos desta semana?")) {
                 Object.keys(fullMenuData[year][month][idx].links).forEach(k => fullMenuData[year][month][idx].links[k] = '#');
+                hasUnsavedChanges = true;
+                saveDraftToStorage();
+                renderMonth(month, specificIndex);
+            }
+        };
+    });
+
+    // Listener para desfazer alterações de uma semana
+    editor.querySelectorAll('.action-undo-week').forEach(btn => {
+        btn.onclick = (e) => {
+            const idx = parseInt(e.currentTarget.dataset.index);
+            if (originalMenuData[year] && originalMenuData[year][month] && originalMenuData[year][month][idx]) {
+                fullMenuData[year][month][idx].links = JSON.parse(JSON.stringify(originalMenuData[year][month][idx].links));
+                fullMenuData[year][month][idx].active = originalMenuData[year][month][idx].active;
                 renderMonth(month, specificIndex);
                 hasUnsavedChanges = true;
+                saveDraftToStorage();
+                showToast("↩️ Semana restaurada para a versão salva no servidor!", "info");
             }
         };
     });
@@ -353,6 +477,7 @@ function renderMonth(month, specificIndex = null) {
                     fullMenuData[year][month][idx].links[key] = cleanedLink;
                 });
                 hasUnsavedChanges = true;
+                saveDraftToStorage();
                 renderMonth(month, specificIndex);
                 showToast("Links atualizados na categoria!", "info");
             }
@@ -363,6 +488,8 @@ function renderMonth(month, specificIndex = null) {
         btn.onclick = (e) => {
             const idx = parseInt(e.target.dataset.index);
             fullMenuData[year][month][idx].links = { ...fullMenuData[year][month][idx - 1].links };
+            hasUnsavedChanges = true;
+            saveDraftToStorage();
             renderMonth(month, specificIndex);
         };
     });
@@ -393,7 +520,7 @@ function renderMonth(month, specificIndex = null) {
         };
     });
 
-    // Listeners para salvar alterações em tempo real no objeto local
+    // Listeners para salvar alterações em tempo real no objeto local e no rascunho
     editor.querySelectorAll('.link-input').forEach(input => {
         validateInput(input); // Validação inicial ao carregar o mês
         input.oninput = (e) => {
@@ -401,6 +528,7 @@ function renderMonth(month, specificIndex = null) {
             fullMenuData[year][month][index].links[key] = e.target.value;
             hasUnsavedChanges = true;
             document.getElementById('save-btn').classList.add('btn-dirty');
+            saveDraftToStorage();
             updateDashboard();
             validateInput(e.target);
         };
@@ -417,6 +545,7 @@ function renderMonth(month, specificIndex = null) {
             const { month, index } = e.target.dataset;
             fullMenuData[year][month][index].active = e.target.checked;
             hasUnsavedChanges = true;
+            saveDraftToStorage();
         };
     });
 
@@ -459,6 +588,8 @@ async function saveData(notify = false) {
             }
             hasUnsavedChanges = false;
             document.getElementById('save-btn').classList.remove('btn-dirty');
+            clearDraftFromStorage();
+            originalMenuData = JSON.parse(JSON.stringify(fullMenuData));
         } else {
             showToast("❌ Erro ao salvar dados no servidor.", 'error');
         }
@@ -570,13 +701,13 @@ async function showAuditLog() {
 }
 
 /**
- * Abre o modal de pré-visualização de PDF
+ * Abre o modal de pré-visualização de PDF / Google Docs
  */
 function openPdfPreview(url) {
     let previewUrl = url;
     
-    // Converte links do Google Drive para o formato de visualização incorporada (preview)
-    if (url.includes('drive.google.com')) {
+    // Converte links do Google Drive ou Google Docs para o formato de visualização incorporada (preview)
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
         previewUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
     }
 
@@ -602,7 +733,7 @@ document.getElementById('close-pdf-modal').onclick = () => {
     const iframe = document.getElementById('pdf-preview-iframe');
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
-    iframe.src = ''; // Limpa o iframe para economizar recursos e parar carregamentos em background
+    iframe.src = ''; // Limpa o iframe para economizar recursos
 };
 
 document.getElementById('save-btn').onclick = () => saveData(false);
@@ -646,7 +777,6 @@ function goToNextEmptyLink() {
     const nextEmpty = inputs.find(input => input.value === '#' || input.value.trim() === '');
     
     if (nextEmpty) {
-        // Expande a categoria pai se estiver recolhida para que o foco funcione
         const categorySection = nextEmpty.closest('.admin-category-section');
         if (categorySection && categorySection.classList.contains('collapsed')) {
             categorySection.classList.remove('collapsed');
@@ -654,13 +784,10 @@ function goToNextEmptyLink() {
             if (toggleBtn) toggleBtn.textContent = '🔽';
         }
 
-        // Move a tela suavemente para o campo
         nextEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Pequeno delay para aguardar a rolagem/animação de expansão antes de focar
         setTimeout(() => {
             nextEmpty.focus();
-            // Efeito visual de destaque (utiliza a animação 'shake' já existente no CSS)
             nextEmpty.classList.add('shake');
             setTimeout(() => nextEmpty.classList.remove('shake'), 400);
         }, 400);
@@ -670,11 +797,33 @@ function goToNextEmptyLink() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme(); // Carrega o tema imediatamente para evitar "flash" de branco
+    initTheme(); // Carrega o tema imediatamente
     initBackToTop();
     
     const nextBtn = document.getElementById('next-empty-btn');
     if (nextBtn) nextBtn.onclick = goToNextEmptyLink;
+
+    // Atalhos globais de teclado
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            saveData(false);
+        }
+        if (e.key === 'Escape') {
+            const auditModal = document.getElementById('audit-modal');
+            const pdfModal = document.getElementById('pdf-preview-modal');
+            if (auditModal && auditModal.classList.contains('show')) {
+                auditModal.classList.remove('show');
+                auditModal.setAttribute('aria-hidden', 'true');
+            }
+            if (pdfModal && pdfModal.classList.contains('show')) {
+                pdfModal.classList.remove('show');
+                pdfModal.setAttribute('aria-hidden', 'true');
+                const iframe = document.getElementById('pdf-preview-iframe');
+                if (iframe) iframe.src = '';
+            }
+        }
+    });
 
     init();
 });
