@@ -360,7 +360,10 @@
     </script>
 
     <div class="admin-container">
-        <h1 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">🛠️ Painel Administrativo</h1>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+            <h1 style="margin: 0; color: var(--primary-color); flex: 1; text-align: center;">🛠️ Painel Administrativo</h1>
+            <button type="button" class="theme-toggle-btn" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Alternar tema">🌙</button>
+        </div>
         <div id="status-msg"></div>
 
         <div class="controls-wrapper" style="box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--medium-gray);">
@@ -426,16 +429,16 @@
                 <div id="stat-alerts" class="alert-badge" style="display: none;" title="Existem links pendentes (#)">
                     <span class="alert-icon">⚠️</span>
                     <span id="missing-count">0</span>
-                    <button id="next-empty-btn" class="btn-small" style="margin-left: 5px; padding: 1px 6px; font-size: 0.6rem; background: #dc3545; color: white; border: none; border-radius: 10px;" title="Ir para o próximo link vazio">Pular para ➔</button>
+                    <button type="button" id="next-empty-btn" class="btn-small" style="margin-left: 5px; padding: 1px 6px; font-size: 0.6rem; background: #dc3545; color: white; border: none; border-radius: 10px;" title="Ir para o próximo link vazio">Pular para ➔</button>
                 </div>
             </div>
 
-            <button type="button" id="save-btn" class="button creche-m-verde" style="flex: 1;">💾 Salvar Alterações</button>
-            <button type="button" id="notify-btn" class="button creches" style="flex: 1;">🔔 Salvar e Notificar Usuários</button>
-            <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;" title="Visualizar Site Público">👁️</a>
-            <button type="button" id="view-history-btn" class="button fundamental-braga" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;" title="Ver Histórico de Alterações">📜</button>
-            <button type="button" id="theme-toggle" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;" title="Alternar tema">🌙</button>
-            <button type="button" id="logout-btn" class="logout-btn">Sair</button>
+            <button type="button" id="save-btn" class="button creche-m-verde" style="flex: 1; min-width: 140px;">💾 Salvar Alterações</button>
+            <button type="button" id="notify-btn" class="button creches" style="flex: 1; min-width: 180px;">🔔 Salvar e Notificar Usuários</button>
+            <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; flex-shrink: 0;" title="Visualizar Site Público">👁️</a>
+            <button type="button" id="view-history-btn" class="button fundamental-braga" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Ver Histórico de Alterações">📜</button>
+            <button type="button" id="theme-toggle" class="theme-toggle-btn" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Alternar tema">🌙</button>
+            <button type="button" id="logout-btn" class="logout-btn" style="flex-shrink: 0; min-width: 70px;">Sair</button>
         </div>
     </div>
 

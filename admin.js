@@ -636,16 +636,16 @@ function showToast(message, type = 'info', duration = 3000) {
  * Inicializa o tema (claro/escuro) baseado na preferência salva ou do sistema.
  */
 function initTheme() {
-    const themeToggleButton = document.getElementById('theme-toggle');
+    const themeToggleButtons = document.querySelectorAll('#theme-toggle, .theme-toggle-btn');
     const docElement = document.documentElement;
 
     const applyTheme = (theme) => {
         if (theme === 'dark') {
             docElement.classList.add('dark-mode');
-            if (themeToggleButton) themeToggleButton.textContent = '☀️';
+            themeToggleButtons.forEach(btn => btn.textContent = '☀️');
         } else {
             docElement.classList.remove('dark-mode');
-            if (themeToggleButton) themeToggleButton.textContent = '🌙';
+            themeToggleButtons.forEach(btn => btn.textContent = '🌙');
         }
     };
 
@@ -663,9 +663,10 @@ function initTheme() {
     const themeToApply = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     applyTheme(themeToApply);
 
-    if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', toggleTheme);
-    }
+    themeToggleButtons.forEach(btn => {
+        btn.removeEventListener('click', toggleTheme);
+        btn.addEventListener('click', toggleTheme);
+    });
 }
 
 /**

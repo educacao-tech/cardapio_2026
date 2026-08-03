@@ -443,14 +443,14 @@
                 "endDate": "2026-08-28",
                 "active": true,
                 "links": {
-                    "creche-m-verde": "#",
-                    "creches": "#",
-                    "fundamental-braga": "#",
-                    "fundamental-anna": "#",
-                    "fundamental-aaugusto": "#",
-                    "fundamental-esther": "#",
-                    "fundamental-gtl": "#",
-                    "etec": "#"
+                    "creche-m-verde": "https://drive.google.com/file/d/1zmHGkgKFwDbfdJkpMq9JDOWChhrsrs-T/view?usp=sharing",
+                    "creches": "https://drive.google.com/file/d/1zIRvFhlW9uDkYN0t8laXDkJwIFo0DY4S/view?usp=sharing",
+                    "fundamental-braga": "https://drive.google.com/file/d/1-VzptChumNHTXIill7fVudMoIwFqvEUN/view?usp=sharing",
+                    "fundamental-anna": "https://drive.google.com/file/d/1gGAw-oCNdwondqux0CFYTSFUTawMRuVR/view?usp=sharing",
+                    "fundamental-aaugusto": "https://drive.google.com/file/d/1fEutSL0FQqGUhYjxzJGuld7-9iwhYImX/view?usp=sharing",
+                    "fundamental-esther": "https://drive.google.com/file/d/1SU-ulCXItzQ_b0vQTSyboSqT0LxsjSWL/view?usp=sharing",
+                    "fundamental-gtl": "https://drive.google.com/file/d/1ilERuh1fsMQaQn3rYYbjAKgwj-Ht9FIZ/view?usp=sharing",
+                    "etec": "https://drive.google.com/file/d/1YZEXkpz2YTODGVlRaj5otpyB7j_BbFQ-/view?usp=sharing"
                 }
             },
             {
@@ -458,7 +458,7 @@
                 "title": "5ª SEM. - 31/08 a 04/09",
                 "startDate": "2026-08-31",
                 "endDate": "2026-09-04",
-                "active": false,
+                "active": true,
                 "links": {
                     "creche-m-verde": "#",
                     "creches": "#",

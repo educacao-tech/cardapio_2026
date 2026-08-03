@@ -458,7 +458,7 @@
                 "title": "5ª SEM. - 31/08 a 04/09",
                 "startDate": "2026-08-31",
                 "endDate": "2026-09-04",
-                "active": false,
+                "active": true,
                 "links": {
                     "creche-m-verde": "#",
                     "creches": "#",

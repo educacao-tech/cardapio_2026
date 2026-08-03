@@ -443,8 +443,8 @@
                 "endDate": "2026-08-28",
                 "active": true,
                 "links": {
-                    "creche-m-verde": "#",
-                    "creches": "#",
+                    "creche-m-verde": "https://drive.google.com/file/d/1zmHGkgKFwDbfdJkpMq9JDOWChhrsrs-T/view?usp=sharing",
+                    "creches": "https://drive.google.com/file/d/1zIRvFhlW9uDkYN0t8laXDkJwIFo0DY4S/view?usp=sharing",
                     "fundamental-braga": "#",
                     "fundamental-anna": "#",
                     "fundamental-aaugusto": "#",
@@ -458,7 +458,7 @@
                 "title": "5ª SEM. - 31/08 a 04/09",
                 "startDate": "2026-08-31",
                 "endDate": "2026-09-04",
-                "active": false,
+                "active": true,
                 "links": {
                     "creche-m-verde": "#",
                     "creches": "#",
