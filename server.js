@@ -139,12 +139,18 @@ app.post('/api/proxy-check', loginLimiter, authMiddleware, async (req, res) => {
         return res.json({ reachable: false });
     }
 
+    // Segurança: Permite apenas domínios confiáveis para evitar SSRF
+    const allowedDomains = ['drive.google.com', 'docs.google.com', 'google.com'];
     try {
-        // Tenta uma requisição HEAD (mais leve) com timeout de 5 segundos
+        const parsedUrl = new URL(url);
+        if (!allowedDomains.some(domain => parsedUrl.hostname.endsWith(domain))) {
+            return res.json({ reachable: false, error: 'Domínio não permitido' });
+        }
+
         const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
         res.json({ reachable: response.ok });
     } catch (error) {
-        res.json({ reachable: false });
+        res.json({ reachable: false, error: 'Timeout ou erro de conexão' });
     }
 });
 
@@ -183,7 +189,7 @@ app.post('/api/notify-update', loginLimiter, authMiddleware, (req, res) => {
     .catch(() => res.status(500).json({ success: false }));
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5500;
 app.listen(PORT, async () => {
     const url = `http://localhost:${PORT}/admin.html`;
     console.log(`🚀 Servidor Administrativo rodando em: ${url}`);

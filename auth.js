@@ -4,12 +4,15 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Configurações de acesso (Mantenha seguras!)
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'madscold@gmail.com'; // Fallback para dev
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'qwe123'; // Fallback para dev
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'madscold@gmail.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || 'batatais-2026-secret-key'; // Fallback para dev
 
-// Defina como true para pular o envio de e-mail e o código 2FA nos testes locais
-const BYPASS_2FA = true; 
+if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    console.warn("⚠️ AVISO: Usando ADMIN_EMAIL e ADMIN_PASSWORD padrão para desenvolvimento local.");
+}
+
+const BYPASS_2FA = process.env.NODE_ENV === 'development' || !process.env.EMAIL_USER; 
 
 // Estados temporários em memória
 const failedAttempts = {}; 
@@ -51,7 +54,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     // Comparação de e-mail ignorando maiúsculas/minúsculas
-    const isEmailValid = authUser && authUser.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const isEmailValid = authUser && ADMIN_EMAIL && authUser.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
     if (isEmailValid && authHeader !== ADMIN_PASSWORD) {
         console.log(`[AUTH DEBUG] ❌ Senha incorreta para o usuário: ${authUser}`);

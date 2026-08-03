@@ -5,6 +5,8 @@ const editor = document.getElementById('editor-container');
 const monthSelect = document.getElementById('select-month');
 const weekSelect = document.getElementById('select-week');
 
+const accessibilityCache = new Map();
+
 // Mapeamento amigável para os campos de links
 const linkLabels = {
     'creche-m-verde': { text: 'Creche M. Verde', icon: '🌱' },
@@ -114,7 +116,7 @@ async function init(force = false) {
         return;
     }
     
-    const apiUrl = (['5500', '5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5000/api' : '/api';
+    const apiUrl = (['5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5500/api' : '/api';
 
     try {
         setEditorMessage('⏳ Carregando dados do cardápio...');
@@ -214,6 +216,12 @@ async function checkAccessibility(input) {
         return;
     }
 
+    // Cache simples para evitar re-checar a mesma URL na mesma sessão
+    if (accessibilityCache.has(url)) {
+        statusEl.textContent = accessibilityCache.get(url) ? '✅' : '❌';
+        return;
+    }
+
     statusEl.textContent = '⏳';
     try {
         const res = await fetch('/api/proxy-check', {
@@ -223,6 +231,7 @@ async function checkAccessibility(input) {
         });
         const data = await res.json();
         statusEl.textContent = data.reachable ? '✅' : '❌';
+        accessibilityCache.set(url, data.reachable);
         statusEl.title = data.reachable ? 'Link acessível' : 'Link inacessível ou erro de conexão';
     } catch {
         statusEl.textContent = '⚠️';
@@ -400,6 +409,9 @@ function renderMonth(month, specificIndex = null) {
         checkAccessibility(input);
     });
 
+    // Feedback visual: Seletor de mês destaca se há mudanças
+    monthSelect.style.borderLeft = hasUnsavedChanges ? '4px solid #fd7e14' : '';
+
     editor.querySelectorAll('.active-checkbox').forEach(cb => {
         cb.onchange = (e) => {
             const { month, index } = e.target.dataset;
@@ -527,7 +539,7 @@ function initTheme() {
 async function showAuditLog() {
     const modal = document.getElementById('audit-modal');
     const list = document.getElementById('audit-log-list');
-    const apiUrl = (['5500', '5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5000/api' : '/api';
+    const apiUrl = (['5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5500/api' : '/api';
 
     list.innerHTML = '<li>Carregando histórico...</li>';
     modal.classList.add('show');

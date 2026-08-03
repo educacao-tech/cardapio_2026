@@ -80,9 +80,9 @@
         const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutos em milissegundos
         let errorTimeoutId = null; // Variável para armazenar o ID do timeout do erro
 
-        // Resolve o problema do 404: se estiver no Live Server (5500), aponta para o Node (5000)
+        // Resolve o problema do 404: se estiver em outra porta, aponta para o Node (5500)
         const getApiUrl = (endpoint) => {
-            const base = (['5500', '5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5000' : '';
+            const base = (['5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5500' : '';
             return `${base}${endpoint}`;
         };
 
@@ -228,7 +228,7 @@
             }
             updateActivity(); // Inicia o timer no momento do login bem-sucedido
 
-            // Tenta buscar a API. Se falhar, verifica se o servidor está na porta 5000
+            // Tenta buscar a API. Se falhar, verifica se o servidor está na porta 5500
             fetch(getApiUrl('/api/menu')).then(async (res) => {
                 if (res.ok) {
                     document.getElementById('login-overlay').style.display = 'none';

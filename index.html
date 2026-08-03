@@ -23,7 +23,8 @@
                         rel="noopener noreferrer">← Voltar para a Página Principal</a>
                 </p>
                 <div class="header-actions">
-                    <button id="install-button" class="install-btn" title="Instalar Aplicativo" style="display: none;">📲 Instalar App</button>
+                    <button id="install-button" class="install-btn" title="Instalar Aplicativo"
+                        style="display: none;">📲 Instalar App</button>
                     <a href="admin.html" class="admin-btn" title="Acesso Administrativo">⚙️</a>
                     <button id="theme-toggle" title="Alternar tema">🌙</button>
                 </div>
@@ -35,7 +36,8 @@
     <main class="main-container">
         <div class="controls-wrapper">
             <div class="search-container">
-                <input type="text" id="school-search" placeholder="🔍 Buscar sua escola..." aria-label="Filtrar escolas">
+                <input type="text" id="school-search" placeholder="🔍 Buscar sua escola..."
+                    aria-label="Filtrar escolas">
                 <button id="clear-search" title="Limpar busca" aria-label="Limpar busca">✕</button>
             </div>
             <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
@@ -45,8 +47,8 @@
             <div class="spinner"></div>
             <div class="checkmark-wrapper" style="display: none;">
                 <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
                 </svg>
             </div>
         </div>
@@ -75,26 +77,53 @@
                 <div class="column-header">
                     <h2 class="column-title"></h2>
                     <button class="share-button" title="Compartilhar" aria-label="Compartilhar esta semana">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" y1="2" x2="12" y2="15" />
+                        </svg>
                     </button>
                 </div>
-                
+
                 <fieldset class="button-group">
                     <legend class="group-label">Infantil / Creches</legend>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde" data-link-key="creche-m-verde" title="Ver cardápio da Creche Municipal Verde" aria-label="Cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches" title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">CRECHES</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde"
+                        data-link-key="creche-m-verde" title="Ver cardápio da Creche Municipal Verde"
+                        aria-label="Cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches"
+                        title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">CRECHES</a>
                 </fieldset>
 
                 <fieldset class="button-group">
                     <legend class="group-label">Ensino Fundamental</legend>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga" data-link-key="fundamental-braga" title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre" aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA e PADRE</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna" data-link-key="fundamental-anna" title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto" aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">ANNA, ANSELMO, M. AP., FAGGIONI, BRAGUETTO</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto" data-link-key="fundamental-aaugusto" title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia" aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">A. AUGUSTO, PORTINARI e M. VIRGÍNIA</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther" data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna" aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl" data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington" aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO e WASHINGTON</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga"
+                        data-link-key="fundamental-braga"
+                        title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre"
+                        aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA e
+                        PADRE</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna"
+                        data-link-key="fundamental-anna"
+                        title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto"
+                        aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">ANNA,
+                        ANSELMO, M. AP., FAGGIONI, BRAGUETTO</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto"
+                        data-link-key="fundamental-aaugusto"
+                        title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia"
+                        aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">A. AUGUSTO, PORTINARI e
+                        M. VIRGÍNIA</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther"
+                        data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna"
+                        aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl"
+                        data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington"
+                        aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO e
+                        WASHINGTON</a>
                 </fieldset>
-                
-                <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec" title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">ETEC / MÉDIO</a>
+
+                <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec"
+                    title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">ETEC /
+                    MÉDIO</a>
             </section>
         </template>
     </main>
@@ -111,7 +140,8 @@
             <div class="modal-body">
                 <ul class="changelog-list">
                     <li><strong>v1.0.2</strong> - Adicionado feedback sonoro e animação de confirmação (Checkmark).</li>
-                    <li><strong>v1.0.1</strong> - Ajustes de layout para melhor visualização em telas menores e modo escuro.</li>
+                    <li><strong>v1.0.1</strong> - Ajustes de layout para melhor visualização em telas menores e modo
+                        escuro.</li>
                     <li><strong>v1.0.0</strong> - Lançamento oficial da plataforma de cardápios 2026.</li>
                 </ul>
             </div>
@@ -119,11 +149,11 @@
     </div>
 
     <footer class="main-footer">
-        <p>&copy; <span id="current-year">2026</span> Secretaria da Educação de Batatais. Todos os direitos reservados. 
-           <button id="version-link" class="version-tag" title="Ver histórico de alterações">
+        <p>&copy; <span id="current-year">2026</span> Secretaria da Educação de Batatais. Todos os direitos reservados.
+            <button id="version-link" class="version-tag" title="Ver histórico de alterações">
                 v<span id="app-version">1.0.2</span>
                 <span id="new-version-badge" class="new-badge" style="display: none;">NOVO</span>
-           </button>
+            </button>
         </p>
     </footer>
 
