@@ -649,7 +649,11 @@ function initTheme() {
         }
     };
 
-    const toggleTheme = () => {
+    const toggleTheme = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         const currentTheme = docElement.classList.contains('dark-mode') ? 'light' : 'dark';
         localStorage.setItem('theme', currentTheme);
         applyTheme(currentTheme);

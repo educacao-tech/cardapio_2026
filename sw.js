@@ -1,9 +1,11 @@
-const CACHE_NAME = 'cardapio-batatais-v1.0.2';
+const CACHE_NAME = 'cardapio-batatais-v1.0.3';
 const ASSETS = [
   '/',
   'index.html',
+  'admin.html',
   'style.css',
   'script.js',
+  'admin.js',
   'menu-links.json',
   'assets/success.mp3',
   'assets/no-results.svg',
@@ -53,8 +55,12 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request).catch(() => {
       return caches.match(event.request).then((response) => {
         if (response) return response;
-        // Se for uma navegação e não tiver no cache, retorna a index
-        if (event.request.mode === 'navigate') return caches.match('index.html');
+        if (event.request.mode === 'navigate') {
+          if (url.pathname.includes('admin.html')) {
+            return caches.match('admin.html');
+          }
+          return caches.match('index.html');
+        }
       });
     })
   );

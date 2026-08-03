@@ -23,6 +23,7 @@
                         rel="noopener noreferrer">← Voltar para a Página Principal</a>
                 </p>
                 <div class="header-actions">
+                    <button id="push-notify-btn" class="install-btn push-btn" title="Receber avisos de novos cardápios">🔔 Receber Avisos</button>
                     <button id="install-button" class="install-btn" title="Instalar Aplicativo"
                         style="display: none;">📲 Instalar App</button>
                     <a href="admin.html" class="admin-btn" title="Acesso Administrativo">⚙️</a>
@@ -67,6 +68,18 @@
             <h2>Nenhum cardápio disponível no momento.</h2>
             <p>Por favor, volte mais tarde para conferir as novidades.</p>
             <img src="assets/no-data.svg" alt="Nenhum cardápio disponível" class="message-icon">
+        </div>
+
+        <!-- Banner de Destaque "Hoje na Merenda" / Semana Atual -->
+        <div id="featured-week-banner" class="featured-week-banner" style="display: none;">
+            <div class="featured-banner-content">
+                <span class="featured-icon">🍴</span>
+                <div>
+                    <h3 class="featured-title">Cardápio em Destaque — <span id="featured-week-title">Semana Atual</span></h3>
+                    <p class="featured-sub">Confira a alimentação escolar preparada para esta semana.</p>
+                </div>
+            </div>
+            <button id="featured-jump-btn" class="featured-jump-btn">Ver Cardápio ➔</button>
         </div>
 
         <div class="columns-container" id="week-cards-container"></div>
@@ -129,6 +142,26 @@
     </main>
 
     <button id="back-to-top" title="Voltar ao topo">↑</button>
+
+    <!-- Modal do Leitor de Cardápio Embutido -->
+    <div id="public-pdf-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content public-pdf-content">
+            <div class="modal-header">
+                <div class="pdf-modal-title-wrapper">
+                    <h2 id="public-pdf-title" style="margin: 0; font-size: 1.1rem; color: var(--primary-color);">Cardápio Escola</h2>
+                    <span id="public-pdf-subtitle" class="pdf-modal-subtitle" style="font-size: 0.75rem; color: var(--text-color-muted);"></span>
+                </div>
+                <div class="pdf-modal-actions" style="display: flex; gap: 8px; align-items: center;">
+                    <a id="public-pdf-external" href="#" target="_blank" rel="noopener noreferrer" class="btn-small" style="text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Abrir em Nova Aba">🔗 Nova Aba</a>
+                    <button id="public-pdf-share" class="btn-small" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Compartilhar Cardápio">📲 Compartilhar</button>
+                    <button id="close-public-pdf-modal" class="close-btn" aria-label="Fechar leitor">✕</button>
+                </div>
+            </div>
+            <div class="modal-body pdf-modal-body" style="flex: 1; padding: 0; height: calc(100% - 60px);">
+                <iframe id="public-pdf-iframe" src="" title="Visualizador de Cardápio" loading="lazy" style="width: 100%; height: 100%; border: none; border-radius: 0 0 12px 12px;"></iframe>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal de Histórico de Alterações -->
     <div id="changelog-modal" class="modal-overlay" aria-hidden="true">

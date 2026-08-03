@@ -40,6 +40,12 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
+    <script>
+        // Se já houver token salvo na sessão, oculta o overlay de login imediatamente para evitar redirecionamentos ao trocar de tema
+        if (sessionStorage.getItem('admin_token')) {
+            document.write('<style>#login-overlay { display: none !important; }</style>');
+        }
+    </script>
 </head>
 <body class="admin-page">
     <div id="dev-mode-banner" class="dev-mode-banner">
@@ -92,6 +98,11 @@
                 sessionStorage.setItem('last_activity', Date.now());
             }
         };
+
+        // Registra atividade do usuário ao interagir com a tela para não expirar a sessão enquanto usa o admin
+        ['click', 'keydown', 'mousemove', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, updateActivity, { passive: true });
+        });
 
         // Verifica se a sessão expirou por inatividade
         const checkInactivity = () => {
@@ -419,12 +430,12 @@
                 </div>
             </div>
 
-            <button id="save-btn" class="button creche-m-verde" style="flex: 1;">💾 Salvar Alterações</button>
-            <button id="notify-btn" class="button creches" style="flex: 1;">🔔 Salvar e Notificar Usuários</button>
-            <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 50px;" title="Visualizar Site Público">👁️</a>
-            <button id="view-history-btn" class="button fundamental-braga" style="width: 50px;" title="Ver Histórico de Alterações">📜</button>
-            <button id="theme-toggle" title="Alternar tema">🌙</button>
-            <button id="logout-btn" class="logout-btn">Sair</button>
+            <button type="button" id="save-btn" class="button creche-m-verde" style="flex: 1;">💾 Salvar Alterações</button>
+            <button type="button" id="notify-btn" class="button creches" style="flex: 1;">🔔 Salvar e Notificar Usuários</button>
+            <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;" title="Visualizar Site Público">👁️</a>
+            <button type="button" id="view-history-btn" class="button fundamental-braga" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;" title="Ver Histórico de Alterações">📜</button>
+            <button type="button" id="theme-toggle" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center;" title="Alternar tema">🌙</button>
+            <button type="button" id="logout-btn" class="logout-btn">Sair</button>
         </div>
     </div>
 

@@ -89,11 +89,17 @@ function createWeekCard(weekData, isCurrent = false) {
 
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
-        const linkKey = button.dataset.linkKey; // linkKey pode ser undefined se o atributo não existir
+        const linkKey = button.dataset.linkKey;
         const link = linkKey ? weekData.links[linkKey] : null;
 
         if (isValidUrl(link)) {
             button.href = link;
+            button.addEventListener('click', (e) => {
+                // Permite abrir em nova aba se Ctrl/Cmd for pressionado
+                if (e.ctrlKey || e.metaKey || e.button === 1) return;
+                e.preventDefault();
+                openPublicDocumentReader(link, button.textContent.trim(), weekData.title);
+            });
         } else {
             button.classList.add('disabled');
         }
@@ -104,7 +110,6 @@ function createWeekCard(weekData, isCurrent = false) {
         shareBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const weekTitle = weekData.title;
-            // Gera uma URL que aponta para o ID da semana no site atual
             const shareUrl = `${window.location.origin}${window.location.pathname}#${weekData.weekId}`;
             
             const message = `Confira o cardápio da Secretaria da Educação de Batatais para a ${weekTitle}:\n\n${shareUrl}`;
@@ -115,6 +120,45 @@ function createWeekCard(weekData, isCurrent = false) {
     }
 
     return section;
+}
+
+/**
+ * Abre o leitor público de documentos (PDF / Google Docs / Drive) em um modal incorporado.
+ */
+function openPublicDocumentReader(url, schoolName, weekTitle) {
+    let previewUrl = url;
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        previewUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+    }
+
+    const modal = document.getElementById('public-pdf-modal');
+    const titleEl = document.getElementById('public-pdf-title');
+    const subtitleEl = document.getElementById('public-pdf-subtitle');
+    const externalLink = document.getElementById('public-pdf-external');
+    const shareBtn = document.getElementById('public-pdf-share');
+    const iframe = document.getElementById('public-pdf-iframe');
+
+    if (modal && iframe) {
+        if (titleEl) titleEl.textContent = schoolName;
+        if (subtitleEl) subtitleEl.textContent = weekTitle;
+        if (externalLink) externalLink.href = url;
+        iframe.src = previewUrl;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+
+        if (shareBtn) {
+            shareBtn.onclick = (e) => {
+                e.preventDefault();
+                const shareText = `Confira o cardápio da ${schoolName} (${weekTitle}):\n\n${url}`;
+                if (navigator.share) {
+                    navigator.share({ title: `Cardápio ${schoolName}`, text: shareText, url: url }).catch(() => {});
+                } else {
+                    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+                    window.open(waUrl, '_blank');
+                }
+            };
+        }
+    }
 }
 
 /**
@@ -243,6 +287,8 @@ function buildAnnualMenu(menuData) {
 
     let totalActiveWeeks = 0;
 
+    let currentActiveWeekData = null;
+
     if (yearData) {
         // Ordena os meses cronologicamente antes de iterar
         const sortedMonths = Object.keys(yearData).sort((a, b) => (MONTH_ORDER[a.toLowerCase()] || 0) - (MONTH_ORDER[b.toLowerCase()] || 0));
@@ -269,6 +315,10 @@ function buildAnnualMenu(menuData) {
                 const startDate = new Date(`${weekData.startDate}T00:00:00Z`);
                 const endDate = new Date(`${weekData.endDate}T23:59:59Z`);
                 const isCurrent = today >= startDate && today <= endDate;
+
+                if (isCurrent) {
+                    currentActiveWeekData = weekData;
+                }
 
                 // Verifica se esta semana possui ao menos um link real (diferente de #)
                 const hasValidLink = Object.values(weekData.links).some(link => isValidUrl(link));
@@ -298,6 +348,29 @@ function buildAnnualMenu(menuData) {
                 activeMonthsData.push({ name: monthName.toLowerCase(), isSoon: !isMonthReady });
             }
         }
+    }
+
+    // Configura o banner de destaque da semana atual
+    const featuredBanner = document.getElementById('featured-week-banner');
+    const featuredTitle = document.getElementById('featured-week-title');
+    const featuredJumpBtn = document.getElementById('featured-jump-btn');
+
+    if (currentActiveWeekData && featuredBanner && featuredTitle) {
+        featuredBanner.style.display = 'flex';
+        featuredTitle.textContent = currentActiveWeekData.title;
+
+        if (featuredJumpBtn) {
+            featuredJumpBtn.onclick = () => {
+                const targetWeekCard = document.getElementById(currentActiveWeekData.weekId);
+                if (targetWeekCard) {
+                    targetWeekCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetWeekCard.classList.add('highlight-week');
+                    setTimeout(() => targetWeekCard.classList.remove('highlight-week'), 1500);
+                }
+            };
+        }
+    } else if (featuredBanner) {
+        featuredBanner.style.display = 'none';
     }
 
     renderMonthSelector(activeMonthsData);
@@ -680,6 +753,61 @@ async function setupPushNotifications(registration) {
     }
 }
 
+function initPublicPdfModalEvents() {
+    const closeBtn = document.getElementById('close-public-pdf-modal');
+    const modal = document.getElementById('public-pdf-modal');
+    const iframe = document.getElementById('public-pdf-iframe');
+
+    if (closeBtn && modal) {
+        closeBtn.onclick = () => {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            if (iframe) iframe.src = '';
+        };
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && modal.classList.contains('show')) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            if (iframe) iframe.src = '';
+        }
+    });
+}
+
+function initPushNotifyButton() {
+    const pushBtn = document.getElementById('push-notify-btn');
+    if (!pushBtn) return;
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+        pushBtn.textContent = '🔔 Notificações Ativas';
+        pushBtn.classList.add('subscribed');
+    }
+
+    pushBtn.onclick = async () => {
+        if (!('Notification' in window)) {
+            alert('Notificações não são suportadas pelo seu navegador.');
+            return;
+        }
+
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                pushBtn.textContent = '🔔 Notificações Ativas';
+                pushBtn.classList.add('subscribed');
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    setupPushNotifications(reg);
+                }
+            } else {
+                alert('Permissão para notificações foi recusada ou bloqueada nas configurações do navegador.');
+            }
+        } catch (err) {
+            console.error('Erro ao solicitar permissão de notificação:', err);
+        }
+    };
+}
+
 // Registro do Service Worker para PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -692,4 +820,8 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadMenuData);
+document.addEventListener('DOMContentLoaded', () => {
+    loadMenuData();
+    initPublicPdfModalEvents();
+    initPushNotifyButton();
+});
