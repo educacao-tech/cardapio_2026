@@ -73,12 +73,22 @@ function createWeekCard(weekData, isCurrent = false) {
     section.id = weekData.weekId;
 
     const titleElement = section.querySelector('.column-title');
-    const startDateDisplay = weekData.title.match(/\d{2}\/\d{2}/g)[0];
-    const endDateDisplay = weekData.title.match(/\d{2}\/\d{2}/g)[1];
+    const datesMatch = weekData.title.match(/(\d{2}\/\d{2})\s*a\s*(\d{2}\/\d{2})/);
 
-    titleElement.innerHTML = weekData.title
-        .replace(startDateDisplay, `<time datetime="${weekData.startDate}">${startDateDisplay}</time>`)
-        .replace(endDateDisplay, `<time datetime="${weekData.endDate}">${endDateDisplay}</time>`);
+    if (datesMatch) {
+        const startDateDisplay = datesMatch[1];
+        const endDateDisplay = datesMatch[2];
+        const weekName = weekData.title.split('-')[0].trim();
+
+        titleElement.innerHTML = `
+            <div class="week-title-wrapper">
+                <span class="week-name">${weekName}</span>
+                <span class="week-dates-badge">📅 <time datetime="${weekData.startDate}">${startDateDisplay}</time> a <time datetime="${weekData.endDate}">${endDateDisplay}</time></span>
+            </div>
+        `;
+    } else {
+        titleElement.textContent = weekData.title;
+    }
 
     if (isCurrent) {
         const badge = document.createElement('div');
@@ -111,15 +121,101 @@ function createWeekCard(weekData, isCurrent = false) {
             e.preventDefault();
             const weekTitle = weekData.title;
             const shareUrl = `${window.location.origin}${window.location.pathname}#${weekData.weekId}`;
-            
             const message = `Confira o cardápio da Secretaria da Educação de Batatais para a ${weekTitle}:\n\n${shareUrl}`;
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-            
+
+            if (navigator.share) {
+                navigator.share({
+                    title: `Cardápio Batatais - ${weekTitle}`,
+                    text: message,
+                    url: shareUrl
+                }).catch(() => {});
+            } else {
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            }
+        });
+    }
+
+    const waBtn = section.querySelector('.whatsapp-button');
+    if (waBtn) {
+        waBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const weekTitle = weekData.title;
+            const shareUrl = `${window.location.origin}${window.location.pathname}#${weekData.weekId}`;
+            const message = `🍴 *Cardápio Escolar 2026 - Batatais (SP)*\n\n🗓️ *${weekTitle}*\nConfira a alimentação escolar preparada para esta semana:\n🔗 ${shareUrl}`;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         });
     }
 
+    const speechBtn = section.querySelector('.speech-button');
+    if (speechBtn) {
+        speechBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleSpeechForCard(section, weekData.title, speechBtn);
+        });
+    }
+
     return section;
+}
+
+let activeSpeechBtn = null;
+
+/**
+ * Lê o conteúdo do card de semana em voz alta usando a Web Speech API.
+ */
+function toggleSpeechForCard(cardSection, weekTitle, btn) {
+    if (!('speechSynthesis' in window)) {
+        alert('Leitura de voz não é suportada por este navegador.');
+        return;
+    }
+
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        if (activeSpeechBtn) {
+            activeSpeechBtn.textContent = '🔊';
+            activeSpeechBtn.title = 'Ouvir cardápio em voz alta';
+        }
+        if (activeSpeechBtn === btn) {
+            activeSpeechBtn = null;
+            return;
+        }
+    }
+
+    // Extrai o texto formatado das escolas da semana
+    const groups = Array.from(cardSection.querySelectorAll('.button-group'));
+    let speechText = `Cardápio para a ${weekTitle}. `;
+    groups.forEach(group => {
+        const label = group.querySelector('.group-label')?.textContent || '';
+        const buttons = Array.from(group.querySelectorAll('.button:not(.disabled)'));
+        if (buttons.length > 0) {
+            const schoolNames = buttons.map(b => b.textContent.trim()).join(', ');
+            speechText += `${label}: ${schoolNames}. `;
+        }
+    });
+
+    const etecBtn = cardSection.querySelector('.button.etec:not(.disabled)');
+    if (etecBtn) {
+        speechText += `Ensino Médio e ETEC: ${etecBtn.textContent.trim()}.`;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 0.95;
+
+    utterance.onstart = () => {
+        btn.textContent = '⏹️';
+        btn.title = 'Parar leitura de voz';
+        activeSpeechBtn = btn;
+    };
+
+    utterance.onend = utterance.onerror = () => {
+        btn.textContent = '🔊';
+        btn.title = 'Ouvir cardápio em voz alta';
+        activeSpeechBtn = null;
+    };
+
+    window.speechSynthesis.speak(utterance);
 }
 
 /**
@@ -443,6 +539,13 @@ function buildAnnualMenu(menuData) {
         const skeleton = document.getElementById('loading-skeleton');
 
         searchInput.addEventListener('input', (e) => {
+            const start = searchInput.selectionStart;
+            const end = searchInput.selectionEnd;
+            searchInput.value = searchInput.value.toUpperCase();
+            if (start !== null && end !== null) {
+                searchInput.setSelectionRange(start, end);
+            }
+
             clearTimeout(searchTimeout);
             const term = e.target.value.toLowerCase().trim();
 
@@ -889,4 +992,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initPublicPdfModalEvents();
     initPushNotifyButton();
     loadGitHubCommitInfo();
+
+    const printBtn = document.getElementById('print-page-btn');
+    if (printBtn) {
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+    }
 });

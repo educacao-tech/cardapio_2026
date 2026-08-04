@@ -246,6 +246,7 @@
         color: var(--text-color);
         font-size: 0.9rem;
         font-weight: 500;
+        text-transform: uppercase;
         transition: all 0.25s ease;
     }
 
@@ -640,44 +641,102 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
         border-block-end: 2px solid var(--background-color);
-        padding-block-end: 0.65rem;
+        padding-block-end: 0.75rem;
         margin-bottom: 0.5rem;
     }
 
     .column-title {
-        font-size: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
-        font-weight: 700;
-        color: var(--text-color);
         margin: 0;
         text-align: left;
         flex: 1;
+        min-width: 0;
+    }
+
+    .week-title-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .week-name {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-color);
+        line-height: 1.2;
         letter-spacing: -0.01em;
     }
 
-    .share-button {
-        background: rgba(2, 132, 199, 0.08);
-        border: 1px solid rgba(2, 132, 199, 0.15);
-        border-radius: 50%;
+    .week-dates-badge {
+        font-size: 0.82rem;
+        font-weight: 600;
         color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    :root.dark-mode .week-dates-badge {
+        color: #38bdf8;
+    }
+
+    .card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-shrink: 0;
+        background: var(--background-color);
+        padding: 0.25rem;
+        border-radius: 25px;
+        border: 1px solid var(--medium-gray);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .whatsapp-button,
+    .speech-button,
+    .share-button {
+        background: var(--surface-color);
+        border: 1px solid var(--medium-gray);
+        border-radius: 50%;
+        color: var(--text-color);
         cursor: pointer;
-        padding: 6px;
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .whatsapp-button:hover {
+        background: #25d366;
+        color: white;
+        border-color: #25d366;
+        transform: scale(1.12);
+        box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+    }
+
+    .speech-button:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        transform: scale(1.12);
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
     }
 
     .share-button:hover {
-        background: var(--primary-color);
-        color: #ffffff;
-        transform: scale(1.1);
+        background: var(--primary-color-dark);
+        color: white;
+        border-color: var(--primary-color-dark);
+        transform: scale(1.12);
+        box-shadow: 0 4px 10px rgba(3, 105, 161, 0.35);
     }
 
     .share-button svg {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
     }
 
     /* Agrupamento de botões */
@@ -1766,3 +1825,52 @@
 :root.dark-mode .school-input-group[data-school-type="fundamental-esther"] { background-color: rgba(111, 66, 193, 0.18); }
 :root.dark-mode .school-input-group[data-school-type="fundamental-gtl"] { background-color: rgba(102, 16, 242, 0.18); }
 :root.dark-mode .school-input-group[data-school-type="etec"] { background-color: rgba(255, 255, 255, 0.08); }
+
+/* Configurações de Impressão A4 Otimizada */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    .main-header,
+    .controls-wrapper,
+    .header-actions,
+    .back-link,
+    #back-to-top,
+    .card-header-actions,
+    .main-footer,
+    #featured-week-banner,
+    .week-badge {
+        display: none !important;
+    }
+
+    .main-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .columns-container {
+        display: block !important;
+    }
+
+    .button-column {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #cccccc !important;
+        box-shadow: none !important;
+        margin-bottom: 1.5rem !important;
+        background: #ffffff !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .button {
+        color: #000000 !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+    }
+}
