@@ -2,54 +2,60 @@
 :root {
     color-scheme: light dark;
     /* Tema Claro (Padrão) */
-    --primary-color: #007bff;
-    --primary-color-dark: #0056b3;
-    --background-color: #f8f9fa;
+    --primary-color: #0284c7;
+    --primary-color-dark: #0369a1;
+    --background-color: #f8fafc;
     --surface-color: #ffffff;
-    --medium-gray: #dee2e6;
-    --dark-gray: #343a40;
-    --text-color: #212529;
-    --text-color-muted: #6c757d;
+    --medium-gray: #e2e8f0;
+    --dark-gray: #1e293b;
+    --text-color: #0f172a;
+    --text-color-muted: #64748b;
     --white: #ffffff;
-    --shadow-color: rgba(0, 0, 0, 0.08);
-    --focus-ring-color: rgba(0, 123, 255, 0.5);
-    --highlight-background-color: #e6f7ff;
-    --highlight-shadow-color: rgba(0, 86, 179, 0.5);
+    --shadow-color: rgba(15, 23, 42, 0.08);
+    --focus-ring-color: rgba(2, 132, 199, 0.35);
+    --highlight-background-color: #f0f9ff;
+    --highlight-shadow-color: rgba(2, 132, 199, 0.25);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
 
-    /* Cores dos Botões */
-    --btn-creche-m-verde: #28a745;
-    --btn-creches: #17a2b8;
-    --btn-fundamental-braga: #ffc107;
-    --btn-fundamental-anna: #fd7e14;
-    --btn-fundamental-aaugusto: #dc3545;
-    --btn-fundamental-esther: #6f42c1;
-    --btn-fundamental-gtl: #6610f2;
-    --btn-etec: #343a40;
+    /* Cores dos Botões (Paleta Refinada HSL/Hex) */
+    --btn-creche-m-verde: #059669;
+    --btn-creches: #0891b2;
+    --btn-fundamental-braga: #d97706;
+    --btn-fundamental-anna: #ea580c;
+    --btn-fundamental-aaugusto: #e11d48;
+    --btn-fundamental-esther: #7c3aed;
+    --btn-fundamental-gtl: #4f46e5;
+    --btn-etec: #334155;
 }
 
 /* Tema Escuro (ativado via classe .dark-mode no <html>) */
 :root.dark-mode {
-    --primary-color: #3eadff;
-    --primary-color-dark: #007bff;
-    --background-color: #121212;
-    --surface-color: #1e1e1e;
-    --text-color: #e0e0e0;
-    --text-color-muted: #a0a0a0;
-    --shadow-color: rgba(0, 0, 0, 0.2);
-    --focus-ring-color: rgba(62, 173, 255, 0.6);
-    --highlight-background-color: rgba(62, 173, 255, 0.1);
-    --highlight-shadow-color: rgba(62, 173, 255, 0.4);
+    --primary-color: #38bdf8;
+    --primary-color-dark: #0284c7;
+    --background-color: #0f172a;
+    --surface-color: #1e293b;
+    --medium-gray: #334155;
+    --dark-gray: #f8fafc;
+    --text-color: #f1f5f9;
+    --text-color-muted: #94a3b8;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --focus-ring-color: rgba(56, 189, 248, 0.4);
+    --highlight-background-color: rgba(56, 189, 248, 0.12);
+    --highlight-shadow-color: rgba(56, 189, 248, 0.3);
+    --glass-bg: rgba(30, 41, 59, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 :root.dark-mode .main-header {
-    background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);
-    border-block-end: 3px solid #3a506b;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
+    border-block-end: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 :root.dark-mode .main-footer {
-    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
     border-top: 4px solid var(--primary-color);
-    color: #8b949e;
+    color: #94a3b8;
 }
 
 /* Define a ordem explícita das camadas da cascata, da menor para a maior prioridade. */
@@ -66,7 +72,7 @@
 
     /* Estilos Base */
     body {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         line-height: 1.6;
         margin: 0;
         /* Adiciona um padrão sutil de fundo */
@@ -99,19 +105,19 @@
         transition: background-color 0.3s ease;
     }
 
-    /* Cabeçalho */
+    /* Cabeçalho Glassmorphic */
     .main-header {
-        background: linear-gradient(135deg, #004085 0%, #007bff 100%);
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.95) 0%, rgba(3, 105, 161, 0.98) 100%);
         color: #ffffff;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding-block: 0.75rem;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding-block: 0.85rem;
         padding-inline: 2rem;
-        border-block-end: 3px solid #0056b3;
+        border-block-end: 1px solid rgba(255, 255, 255, 0.15);
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.25);
+        box-shadow: 0 10px 30px -10px rgba(2, 132, 199, 0.3);
     }
 
     .header-content {
@@ -129,14 +135,44 @@
         width: 100%;
     }
 
+    .header-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        margin-top: 0.4rem;
+    }
+
+    .brand-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.2rem 0.75rem;
+        border-radius: 20px;
+        color: #ffffff;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
     .back-link a {
         color: rgba(255, 255, 255, 0.95) !important;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(6px);
+        transition: all 0.25s ease;
+        text-decoration: none;
     }
 
     .back-link a:hover {
         color: #ffffff !important;
-        text-decoration: underline;
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-1px);
     }
 
     .header-actions {
@@ -150,25 +186,30 @@
         margin-block-start: 0;
         color: #ffffff;
         text-align: center;
-        /* Tipografia fluida: se ajusta ao tamanho da tela */
-        font-size: clamp(1.3rem, 1rem + 1.5vw, 1.8rem);
+        font-size: clamp(1.3rem, 1rem + 1.5vw, 1.85rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
         line-height: 1.1;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .controls-wrapper {
         display: flex;
-        position: relative; /* Adicionado para posicionar as setas de scroll */
+        position: relative;
         flex-direction: row;
         align-items: center;
         gap: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         position: sticky;
-        top: 45px;
+        top: 70px;
         z-index: 95;
-        background-color: var(--background-color);
-        padding: 0.75rem 1rem;
-        border-radius: 12px;
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid var(--medium-gray);
+        padding: 0.85rem 1.25rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px var(--shadow-color);
     }
 
     /* Seletor de Meses */
@@ -177,44 +218,46 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         justify-content: flex-start;
-        gap: 0.75rem; /* Aumentado para melhor espaçamento */
-        padding: 0.25rem;
+        gap: 0.6rem;
+        padding: 0.35rem;
         flex: 1;
-        min-width: 0; /* Importante para permitir o scroll horizontal dentro do flex */
+        min-width: 0;
         background-color: var(--surface-color);
-        border-radius: 12px;
-        scrollbar-width: none; /* Firefox */
+        border: 1px solid var(--medium-gray);
+        border-radius: 30px;
+        scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
-        padding-inline: 40px; /* Espaço para as setas */
+        padding-inline: 10px;
     }
 
     /* Barra de Busca */
     .search-container {
-        flex: 0 0 300px; /* Largura fixa para a busca */
+        flex: 0 0 320px;
         margin: 0;
         position: relative;
     }
 
     #school-search {
         width: 100%;
-        padding: 0.8rem 2.5rem 0.8rem 1.2rem;
+        padding: 0.75rem 2.5rem 0.75rem 1.25rem;
         border-radius: 25px;
         border: 2px solid var(--medium-gray);
         background-color: var(--surface-color);
         color: var(--text-color);
         font-size: 0.9rem;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        font-weight: 500;
+        transition: all 0.25s ease;
     }
 
     #school-search:focus {
         outline: none;
         border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px var(--focus-ring-color);
+        box-shadow: 0 0 0 4px var(--focus-ring-color), 0 4px 12px rgba(2, 132, 199, 0.12);
     }
 
     #clear-search {
         position: absolute;
-        right: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
         background: none;
@@ -222,7 +265,7 @@
         color: var(--text-color-muted);
         cursor: pointer;
         font-size: 1.1rem;
-        display: none; /* Oculto por padrão, exibido via JS */
+        display: none;
         padding: 5px;
         transition: color 0.2s;
     }
@@ -232,26 +275,33 @@
     }
 
     .month-selector::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
+        display: none;
     }
 
     .month-nav-btn {
         background-color: var(--background-color);
-        border: 1px solid var(--medium-gray);
+        border: 1.5px solid var(--medium-gray);
         color: var(--text-color);
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.15rem;
         border-radius: 20px;
         font-size: 0.85rem;
-        font-weight: 500;
+        font-weight: 600;
         white-space: nowrap;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.25s ease;
+    }
+
+    .month-nav-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-1px);
     }
 
     .month-nav-btn.active {
-        background-color: var(--primary-color);
-        color: var(--white);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
+        color: #ffffff;
         border-color: var(--primary-color);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
         animation: month-pulse 2s infinite;
     }
 
@@ -276,6 +326,104 @@
         max-width: 1600px;
         margin: 0.5rem auto 2rem auto;
         padding-inline: 1rem;
+    }
+
+    /* Banner de Destaque "Hoje na Merenda" / Semana Atual */
+    .featured-week-banner {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%);
+        border: 1px solid #fde68a;
+        border-radius: 18px;
+        padding: 1.25rem 1.75rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.15), 0 8px 10px -6px rgba(217, 119, 6, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    :root.dark-mode .featured-week-banner {
+        background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #1e293b 100%);
+        border-color: rgba(217, 119, 6, 0.35);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .featured-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .featured-icon {
+        font-size: 2.2rem;
+        background: rgba(255, 255, 255, 0.85);
+        padding: 0.6rem 0.85rem;
+        border-radius: 14px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    :root.dark-mode .featured-icon {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .featured-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #92400e;
+        letter-spacing: -0.01em;
+    }
+
+    :root.dark-mode .featured-title {
+        color: #fde68a;
+    }
+
+    .featured-sub {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.85rem;
+        color: #b45309;
+    }
+
+    :root.dark-mode .featured-sub {
+        color: #cbd5e1;
+    }
+
+    .featured-jump-btn {
+        background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+        color: #ffffff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+    }
+
+    .featured-jump-btn:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
+    }
+
+    .live-pulse {
+        width: 12px;
+        height: 12px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        position: relative;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        animation: pulse-ring 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+    @keyframes pulse-ring {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
     .month-wrapper {
@@ -343,6 +491,52 @@
         transform: scale(1.05);
     }
 
+    .github-update-info {
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .github-icon {
+        font-size: 0.95rem;
+    }
+
+    .commit-sep {
+        opacity: 0.5;
+    }
+
+    .github-update-info a {
+        color: #38bdf8;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .github-update-info a:hover {
+        color: #7dd3fc;
+        text-decoration: underline;
+    }
+
+    .github-update-info code {
+        background: rgba(0, 0, 0, 0.35);
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.75rem;
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.25);
+    }
+
     .install-btn {
         background-color: var(--primary-color);
         color: white;
@@ -393,95 +587,117 @@
 
     .button-column {
         background-color: var(--surface-color);
-        padding: 1.25rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
+        padding: 1.5rem;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.85rem;
         border: 1px solid var(--medium-gray);
         max-width: 100%;
         scroll-margin-top: 140px; /* Evita que o cabeçalho fixo cubra o card */
         /* Animação de entrada */
         opacity: 0;
         transform: translateY(20px);
-        transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), box-shadow 0.3s ease, filter 0.3s ease, background-color 0.3s ease;
+        transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--stagger-delay, 0s), box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
         position: relative;
         overflow: hidden;
     }
 
+    .button-column::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color) 0%, var(--btn-creche-m-verde) 50%, var(--btn-fundamental-esther) 100%);
+    }
+
     .button-column:hover {
-        box-shadow: 0 20px 25px -5px var(--shadow-color);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 30px -10px var(--shadow-color);
+        border-color: rgba(2, 132, 199, 0.3);
     }
 
     /* Badge para a semana atual */
     .week-badge {
         position: absolute;
-        top: 10px;
+        top: 12px;
         right: -30px;
-        background-color: var(--primary-color);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
         color: white;
-        padding: 5px 35px;
+        padding: 4px 35px;
         font-size: 0.65rem;
-        font-weight: bold;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
         transform: rotate(45deg);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .column-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: center;
         gap: 0.5rem;
         border-block-end: 2px solid var(--background-color);
-        padding-block-end: 0.5rem;
-        margin-bottom: 0.75rem;
+        padding-block-end: 0.65rem;
+        margin-bottom: 0.5rem;
     }
 
     .column-title {
         font-size: clamp(1.1rem, 1rem + 0.5vw, 1.25rem);
+        font-weight: 700;
         color: var(--text-color);
         margin: 0;
         text-align: left;
         flex: 1;
+        letter-spacing: -0.01em;
     }
 
     .share-button {
-        background: none;
-        border: none;
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid rgba(2, 132, 199, 0.15);
+        border-radius: 50%;
         color: var(--primary-color);
         cursor: pointer;
-        padding: 4px;
+        padding: 6px;
         display: flex;
-        transition: transform 0.2s ease;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
     }
 
     .share-button:hover {
-        transform: scale(1.2);
+        background: var(--primary-color);
+        color: #ffffff;
+        transform: scale(1.1);
     }
 
     .share-button svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 
     /* Agrupamento de botões */
     .button-group {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        background-color: rgba(0,0,0,0.02);
-        border-radius: 8px;
+        gap: 0.6rem;
+        padding: 0.75rem;
+        background-color: var(--background-color);
+        border-radius: 12px;
         border: 1px solid var(--medium-gray);
     }
 
     .group-label {
-        font-size: 0.65rem;
-        font-weight: 700;
+        font-size: 0.68rem;
+        font-weight: 800;
         text-transform: uppercase;
         color: var(--text-color-muted);
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.2rem;
     }
 
     /* Classe para ativar a animação quando o elemento está visível */
@@ -503,16 +719,21 @@
 
     /* Estilos dos Botões de Cardápio */
     .button {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
         text-decoration: none;
         color: var(--white);
-        padding: 0.7rem;
-        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
         text-align: center;
-        font-size: 0.75rem;
-        font-weight: 600;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid transparent;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .button:hover {

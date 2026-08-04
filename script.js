@@ -820,8 +820,73 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+/**
+ * Busca e exibe as informações de última atualização (data, hora e commit hash) no rodapé.
+ */
+async function loadGitHubCommitInfo() {
+    const updateContainer = document.getElementById('github-update-info');
+    const dateEl = document.getElementById('github-commit-date');
+    const hashEl = document.getElementById('github-commit-hash');
+    const linkEl = document.getElementById('github-commit-link');
+
+    if (!updateContainer || !dateEl || !hashEl || !linkEl) return;
+
+    let commitData = null;
+
+    // 1. Tenta obter dados da rota do backend local (/api/github-commit)
+    try {
+        const res = await fetch('/api/github-commit');
+        if (res.ok) {
+            commitData = await res.json();
+        }
+    } catch (_) {}
+
+    // 2. Fallback: Se a rota do backend falhar ou estiver estática, busca diretamente da API pública do GitHub
+    if (!commitData || !commitData.hash) {
+        try {
+            const githubRes = await fetch('https://api.github.com/repos/educacao-tech/cardapio_2026/commits/main');
+            if (githubRes.ok) {
+                const data = await githubRes.json();
+                commitData = {
+                    hash: data.sha ? data.sha.substring(0, 7) : '',
+                    fullHash: data.sha || '',
+                    date: data.commit?.committer?.date || data.commit?.author?.date,
+                    url: data.html_url || 'https://github.com/educacao-tech/cardapio_2026'
+                };
+            }
+        } catch (err) {
+            console.warn('Erro ao carregar informações de commit do GitHub:', err);
+        }
+    }
+
+    if (commitData && commitData.date) {
+        try {
+            const dateObj = new Date(commitData.date);
+            const formattedDate = dateObj.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const formattedTime = dateObj.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            dateEl.textContent = `${formattedDate} às ${formattedTime}`;
+            hashEl.textContent = commitData.hash || 'Ver commit';
+            if (commitData.url) {
+                linkEl.href = commitData.url;
+            }
+            updateContainer.style.display = 'flex';
+        } catch (e) {
+            console.error('Erro ao formatar data do commit:', e);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadMenuData();
     initPublicPdfModalEvents();
     initPushNotifyButton();
+    loadGitHubCommitInfo();
 });

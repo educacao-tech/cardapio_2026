@@ -20,8 +20,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api', authRoutes); // Registra rotas de autenticação (ex: /api/get-captcha)
-app.use(express.static(path.join(__dirname, '.'))); 
+app.use('/api', authRoutes); // Registra rotas de autenticação (ex: /api/get-captcha) 
 
 // Configuração do limitador de tentativas de login
 const loginLimiter = rateLimit({
@@ -120,6 +119,64 @@ app.get('/api/env-status', loginLimiter, authMiddleware, (req, res) => {
     res.json({ isDevelopment: process.env.NODE_ENV === 'development' });
 });
 
+// Cache em memória das informações do último commit do GitHub (expira a cada 5 minutos)
+let cachedCommitInfo = null;
+let lastCommitFetchTime = 0;
+
+// Rota pública para buscar últimas informações de atualização do GitHub
+app.get('/api/github-commit', async (req, res) => {
+    const now = Date.now();
+    if (cachedCommitInfo && (now - lastCommitFetchTime < 5 * 60 * 1000)) {
+        return res.json(cachedCommitInfo);
+    }
+
+    // 1. Tenta buscar informações via GitHub API
+    try {
+        const response = await fetch('https://api.github.com/repos/educacao-tech/cardapio_2026/commits/main', {
+            headers: { 'User-Agent': 'Cardapio-Batatais-App' }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            cachedCommitInfo = {
+                hash: data.sha ? data.sha.substring(0, 7) : '',
+                fullHash: data.sha || '',
+                message: data.commit?.message || '',
+                date: data.commit?.committer?.date || data.commit?.author?.date || new Date().toISOString(),
+                author: data.commit?.author?.name || 'educacao-tech',
+                url: data.html_url || 'https://github.com/educacao-tech/cardapio_2026'
+            };
+            lastCommitFetchTime = now;
+            return res.json(cachedCommitInfo);
+        }
+    } catch (err) {
+        console.warn('[GitHub API] Aviso ao consultar API do GitHub:', err.message);
+    }
+
+    // 2. Fallback via git log local se o repositório estiver rodando localmente
+    try {
+        const { execSync } = require('child_process');
+        const gitLog = execSync('git log -1 --format="%h|%H|%cd|%s"', { encoding: 'utf8', cwd: __dirname }).trim();
+        const parts = gitLog.split('|');
+        if (parts.length >= 4) {
+            const [hash, fullHash, dateStr, message] = parts;
+            cachedCommitInfo = {
+                hash: hash,
+                fullHash: fullHash,
+                message: message,
+                date: new Date(dateStr).toISOString(),
+                author: 'educacao-tech',
+                url: `https://github.com/educacao-tech/cardapio_2026/commit/${fullHash}`
+            };
+            lastCommitFetchTime = now;
+            return res.json(cachedCommitInfo);
+        }
+    } catch (gitErr) {
+        console.warn('[Git Local] Aviso ao ler git log local:', gitErr.message);
+    }
+
+    return res.status(500).json({ error: 'Não foi possível obter dados de commit' });
+});
+
 // Rota para ler o histórico de alterações
 app.get('/api/audit-log', loginLimiter, authMiddleware, (req, res) => {
     if (!fs.existsSync(LOG_FILE)) return res.json([]);
@@ -188,6 +245,9 @@ app.post('/api/notify-update', loginLimiter, authMiddleware, (req, res) => {
     .then(() => res.status(200).json({ success: true }))
     .catch(() => res.status(500).json({ success: false }));
 });
+
+// Servidor de arquivos estáticos
+app.use(express.static(path.join(__dirname, '.')));
 
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, async () => {

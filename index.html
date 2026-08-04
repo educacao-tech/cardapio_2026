@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <title>Cardápio Anual 2026</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -30,7 +33,10 @@
                     <button id="theme-toggle" title="Alternar tema">🌙</button>
                 </div>
             </div>
-            <h1>Cardápio Anual 2026</h1>
+            <div class="header-brand">
+                <span class="brand-badge">🥗 Nutrição Escolar • Batatais</span>
+                <h1>Cardápio Anual 2026</h1>
+            </div>
         </div>
     </header>
 
@@ -73,6 +79,7 @@
         <!-- Banner de Destaque "Hoje na Merenda" / Semana Atual -->
         <div id="featured-week-banner" class="featured-week-banner" style="display: none;">
             <div class="featured-banner-content">
+                <span class="live-pulse" title="Semana Atual em Exibição"></span>
                 <span class="featured-icon">🍴</span>
                 <div>
                     <h3 class="featured-title">Cardápio em Destaque — <span id="featured-week-title">Semana Atual</span></h3>
@@ -188,6 +195,12 @@
                 <span id="new-version-badge" class="new-badge" style="display: none;">NOVO</span>
             </button>
         </p>
+        <div id="github-update-info" class="github-update-info" style="display: none;">
+            <span class="github-icon" aria-hidden="true">🐙</span>
+            <span>Última atualização: <strong id="github-commit-date">Carregando...</strong></span>
+            <span class="commit-sep">•</span>
+            <span>Commit <a id="github-commit-link" href="https://github.com/educacao-tech/cardapio_2026" target="_blank" rel="noopener noreferrer" title="Ver commit no GitHub"><code id="github-commit-hash">-------</code></a></span>
+        </div>
     </footer>
 
     <script src="script.js" defer></script>
