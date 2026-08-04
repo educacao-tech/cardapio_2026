@@ -443,8 +443,8 @@
                 "endDate": "2026-08-28",
                 "active": true,
                 "links": {
-                    "creche-m-verde": "https://drive.google.com/file/d/1zmHGkgKFwDbfdJkpMq9JDOWChhrsrs-T/view?usp=drive_link",
-                    "creches": "https://drive.google.com/file/d/1zIRvFhlW9uDkYN0t8laXDkJwIFo0DY4S/view?usp=drive_link",
+                    "creche-m-verde": "#",
+                    "creches": "#",
                     "fundamental-braga": "#",
                     "fundamental-anna": "#",
                     "fundamental-aaugusto": "#",
