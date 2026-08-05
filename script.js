@@ -735,7 +735,7 @@ async function loadMenuData() {
 
     document.body.classList.add('no-scroll');
     try {
-        const response = await fetch('menu-links.json');
+        const response = await fetch(`menu-links.json?t=${Date.now()}`, { cache: 'no-store' });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }

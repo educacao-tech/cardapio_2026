@@ -34,10 +34,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Estratégia Network First para o arquivo de dados (JSON)
-  if (url.pathname.endsWith('menu-links.json')) {
+  // Estratégia Network First para o arquivo de dados (JSON) sem guardar cache obsoleto
+  if (url.pathname.includes('menu-links.json')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));

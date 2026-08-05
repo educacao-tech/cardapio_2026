@@ -126,34 +126,26 @@ function autoGitPush(user = 'Desconhecido') {
     const cwd = __dirname;
     const nowStr = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     const commitMsg = `Atualização do cardápio via Admin por ${user} (${nowStr})`;
+    const cmd = `git add menu-links.json audit-log.json && git commit -m "${commitMsg.replace(/"/g, '\\"')}" && git push origin main`;
 
-    exec('git status --porcelain menu-links.json audit-log.json', { cwd }, (err, stdout) => {
-        if (err) {
-            console.error('⚠️ [Git Auto-Push] Erro ao verificar status do repositório:', err.message);
-            return;
-        }
+    console.log(`🚀 [Git Auto-Push Ultrarrápido] Enviando alterações para o GitHub...`);
 
-        if (!stdout.trim()) {
-            console.log('ℹ️ [Git Auto-Push] Nenhuma alteração pendente para commit.');
-            return;
-        }
-
-        const cmd = `git add menu-links.json audit-log.json && git commit -m "${commitMsg.replace(/"/g, '\\"')}" && git push origin main`;
-
-        console.log(`🚀 [Git Auto-Push] Executando commit e push: "${commitMsg}"`);
-
-        exec(cmd, { cwd }, (execErr, stdoutRes, stderrRes) => {
-            if (execErr) {
-                console.error('❌ [Git Auto-Push] Falha ao publicar no Git:', execErr.message);
-                if (stderrRes) console.error('Stderr:', stderrRes);
+    exec(cmd, { cwd }, (execErr, stdoutRes, stderrRes) => {
+        if (execErr) {
+            // Se não houver nada para commitar, o git apenas avisa e segue normal
+            if (execErr.message.includes('nothing to commit')) {
+                console.log('ℹ️ [Git Auto-Push] Nenhuma alteração pendente para commit.');
                 return;
             }
-            console.log('✅ [Git Auto-Push] Sucesso! Alterações enviadas para o GitHub:\n', stdoutRes);
+            console.error('❌ [Git Auto-Push] Falha ao publicar no Git:', execErr.message);
+            if (stderrRes) console.error('Stderr:', stderrRes);
+            return;
+        }
+        console.log('✅ [Git Auto-Push] Publicado com sucesso no GitHub:\n', stdoutRes);
 
-            // Invalida cache de commit do rodapé para atualização imediata
-            cachedCommitInfo = null;
-            lastCommitFetchTime = 0;
-        });
+        // Invalida cache de commit do rodapé para atualização imediata
+        cachedCommitInfo = null;
+        lastCommitFetchTime = 0;
     });
 }
 
