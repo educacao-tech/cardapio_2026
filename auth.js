@@ -38,7 +38,11 @@ const maskValue = (value) => {
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers['x-admin-token'];
     const rawAuthUser = req.headers['x-admin-user'];
-    const authUser = (rawAuthUser && rawAuthUser !== 'undefined' && rawAuthUser !== 'null') ? rawAuthUser.trim() : ADMIN_EMAIL;
+    
+    // Se o cabeçalho tiver múltiplos e-mails duplicados (ex: "email, email"), extrai o primeiro e-mail limpo
+    const firstUser = rawAuthUser ? rawAuthUser.split(',')[0].trim() : '';
+    const authUser = (firstUser && firstUser !== 'undefined' && firstUser !== 'null') ? firstUser : ADMIN_EMAIL;
+    
     const twoFaHeader = req.headers['x-admin-2fa'];
     const ip = req.ip;
     const failures = failedAttempts[ip] || 0;
@@ -55,8 +59,10 @@ const authMiddleware = (req, res, next) => {
         return res.status(401).json({ error: 'Acesso negado. Senha muito curta ou ausente.' });
     }
 
-    // Valida o e-mail (se fornecido explicitamente, deve bater com o ADMIN_EMAIL)
-    const isEmailValid = !rawAuthUser || authUser.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    // Valida o e-mail (se fornecido explicitamente, deve conter ou ser igual ao ADMIN_EMAIL)
+    const isEmailValid = !rawAuthUser || 
+                         authUser.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
+                         rawAuthUser.toLowerCase().includes(ADMIN_EMAIL.toLowerCase());
 
     if (isEmailValid && authHeader !== ADMIN_PASSWORD) {
         console.log(`[AUTH DEBUG] ❌ Senha incorreta para o usuário: ${authUser}`);

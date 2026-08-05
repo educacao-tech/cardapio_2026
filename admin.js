@@ -568,12 +568,10 @@ async function saveData(notify = false) {
     btn.disabled = true;
 
     try {
-        const adminEmail = sessionStorage.getItem('admin_email') || 'Administrador';
         const res = await fetch('/api/menu', {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json',
-                'X-Admin-User': adminEmail
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(fullMenuData)
         });
