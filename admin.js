@@ -568,13 +568,18 @@ async function saveData(notify = false) {
     btn.disabled = true;
 
     try {
+        const adminEmail = sessionStorage.getItem('admin_email') || 'Administrador';
         const res = await fetch('/api/menu', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Admin-User': adminEmail
+            },
             body: JSON.stringify(fullMenuData)
         });
 
         if (res.ok) {
+            const data = await res.json();
             if (notify) {
                 const month = monthSelect.value;
                 await fetch('/api/notify-update', {
@@ -582,9 +587,9 @@ async function saveData(notify = false) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mes: month.charAt(0).toUpperCase() + month.slice(1) })
                 });
-                showToast("✅ Alterações salvas e notificações enviadas!", 'success');
+                showToast("✅ Alterações salvas no arquivo, publicadas no GitHub e notificações enviadas!", 'success', 4000);
             } else {
-                showToast("✅ Alterações salvas com sucesso!", 'success');
+                showToast("✅ Salvo fisicamente em menu-links.json e publicado no GitHub! 🚀", 'success', 4000);
             }
             hasUnsavedChanges = false;
             document.getElementById('save-btn').classList.remove('btn-dirty');

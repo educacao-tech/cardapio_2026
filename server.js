@@ -94,11 +94,12 @@ app.post('/api/menu', loginLimiter, authMiddleware, (req, res) => {
             console.error('❌ Erro crítico ao gravar o arquivo:', err);
             return res.status(500).json({ error: 'Erro ao salvar arquivo JSON', details: err.message });
         }
-        console.log('Cardápio atualizado com sucesso via Admin.');
+        console.log('Cardápio atualizado com sucesso via Admin (salvo fisicamente em menu-links.json).');
 
         // Grava no log de auditoria
+        const adminUser = req.headers['x-admin-user'] || 'Desconhecido';
         const logEntry = {
-            user: req.headers['x-admin-user'] || 'Desconhecido',
+            user: adminUser,
             action: 'Atualização do Cardápio',
             timestamp: new Date().toISOString()
         };
@@ -110,9 +111,51 @@ app.post('/api/menu', loginLimiter, authMiddleware, (req, res) => {
         logs.push(logEntry);
         fs.writeFileSync(LOG_FILE, JSON.stringify(logs.slice(-100), null, 4)); // Mantém últimos 100
 
-        res.json({ success: true });
+        // Executa salvamento no Git (Auto-Push) em segundo plano
+        autoGitPush(adminUser);
+
+        res.json({ success: true, message: 'Cardápio salvo fisicamente no arquivo e publicado no GitHub via auto push.' });
     });
 });
+
+/**
+ * Função para automação de Git Add, Commit e Push
+ */
+function autoGitPush(user = 'Desconhecido') {
+    const { exec } = require('child_process');
+    const cwd = __dirname;
+    const nowStr = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const commitMsg = `Atualização do cardápio via Admin por ${user} (${nowStr})`;
+
+    exec('git status --porcelain menu-links.json audit-log.json', { cwd }, (err, stdout) => {
+        if (err) {
+            console.error('⚠️ [Git Auto-Push] Erro ao verificar status do repositório:', err.message);
+            return;
+        }
+
+        if (!stdout.trim()) {
+            console.log('ℹ️ [Git Auto-Push] Nenhuma alteração pendente para commit.');
+            return;
+        }
+
+        const cmd = `git add menu-links.json audit-log.json && git commit -m "${commitMsg.replace(/"/g, '\\"')}" && git push origin main`;
+
+        console.log(`🚀 [Git Auto-Push] Executando commit e push: "${commitMsg}"`);
+
+        exec(cmd, { cwd }, (execErr, stdoutRes, stderrRes) => {
+            if (execErr) {
+                console.error('❌ [Git Auto-Push] Falha ao publicar no Git:', execErr.message);
+                if (stderrRes) console.error('Stderr:', stderrRes);
+                return;
+            }
+            console.log('✅ [Git Auto-Push] Sucesso! Alterações enviadas para o GitHub:\n', stdoutRes);
+
+            // Invalida cache de commit do rodapé para atualização imediata
+            cachedCommitInfo = null;
+            lastCommitFetchTime = 0;
+        });
+    });
+}
 
 // Nova rota para informar o status do ambiente (dev/prod)
 app.get('/api/env-status', loginLimiter, authMiddleware, (req, res) => {
