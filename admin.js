@@ -553,6 +553,15 @@ function renderMonth(month, specificIndex = null) {
 }
 
 async function saveData(notify = false) {
+    const token = sessionStorage.getItem('admin_token');
+    if (!token) {
+        showToast("⚠️ Sua sessão expirou. Por favor, digite a senha novamente para salvar.", 'warning');
+        document.getElementById('login-overlay').style.display = 'flex';
+        const pwdInput = document.getElementById('admin-pwd');
+        if (pwdInput) pwdInput.focus();
+        return;
+    }
+
     // Bloqueia o salvamento se houver URLs inválidas
     const invalidInputs = editor.querySelectorAll('.link-input.invalid-link');
     if (invalidInputs.length > 0) {

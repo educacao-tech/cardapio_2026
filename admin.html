@@ -161,12 +161,20 @@
 
             if (token) {
                 const options = args[1] || {};
-                options.headers = options.headers || {};
-                options.headers['x-admin-token'] = token;
-                options.headers['x-admin-user'] = email;
-                if (twoFa) options.headers['x-admin-2fa'] = twoFa;
-                if (cAns) options.headers['x-captcha-ans'] = cAns;
-                if (currentCaptchaToken) options.headers['x-captcha-token'] = currentCaptchaToken;
+                if (options.headers instanceof Headers) {
+                    options.headers.set('x-admin-token', token);
+                    options.headers.set('x-admin-user', email);
+                    if (twoFa) options.headers.set('x-admin-2fa', twoFa);
+                    if (cAns) options.headers.set('x-captcha-ans', cAns);
+                    if (currentCaptchaToken) options.headers.set('x-captcha-token', currentCaptchaToken);
+                } else {
+                    options.headers = options.headers || {};
+                    options.headers['x-admin-token'] = token;
+                    options.headers['x-admin-user'] = email;
+                    if (twoFa) options.headers['x-admin-2fa'] = twoFa;
+                    if (cAns) options.headers['x-captcha-ans'] = cAns;
+                    if (currentCaptchaToken) options.headers['x-captcha-token'] = currentCaptchaToken;
+                }
                 args[1] = options;
                 
                 updateActivity(); // Registra atividade em ações de rede bem-sucedidas
