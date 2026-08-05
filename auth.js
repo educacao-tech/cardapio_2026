@@ -46,16 +46,9 @@ const authMiddleware = (req, res, next) => {
     const twoFaHeader = req.headers['x-admin-2fa'];
     const ip = req.ip;
     const failures = failedAttempts[ip] || 0;
-    
-    // Log detalhado para identificar o motivo da autenticação
-    console.log(`[AUTH] Tentativa de Acesso:
-      - E-mail recebido: "${rawAuthUser || '(não informado, assumindo padrão)'}"
-      - E-mail avaliado: "${authUser}"
-      - E-mail esperado: "${ADMIN_EMAIL}"
-      - Token/Senha: ${maskValue(authHeader)}
-      - IP: ${ip}`);
 
     if (!authHeader || authHeader.length < 6) {
+        console.warn(`[AUTH] ⚠️ Acesso negado para IP ${ip}: Senha ausente ou muito curta.`);
         return res.status(401).json({ error: 'Acesso negado. Senha muito curta ou ausente.' });
     }
 
@@ -64,18 +57,12 @@ const authMiddleware = (req, res, next) => {
                          authUser.toLowerCase() === ADMIN_EMAIL.toLowerCase() ||
                          rawAuthUser.toLowerCase().includes(ADMIN_EMAIL.toLowerCase());
 
-    if (isEmailValid && authHeader !== ADMIN_PASSWORD) {
-        console.log(`[AUTH DEBUG] ❌ Senha incorreta para o usuário: ${authUser}`);
-    }
-
     if (isEmailValid && authHeader === ADMIN_PASSWORD) {
         // Se a senha básica está correta, limpamos o contador de falhas de IP
-        // para evitar que o CAPTCHA fique travando o acesso legítimo.
         if (failures > 0) delete failedAttempts[ip];
 
         // Pula a verificação de 2FA se o bypass estiver ativo ou em ambiente de dev
         if (BYPASS_2FA || process.env.NODE_ENV === 'development') {
-            console.log(`[AUTH] Login automático (2FA Ignorado) para ${authUser}`);
             return next();
         }
 
