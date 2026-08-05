@@ -152,7 +152,7 @@
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
             const token = sessionStorage.getItem('admin_token');
-            const email = sessionStorage.getItem('admin_email');
+            const email = sessionStorage.getItem('admin_email') || 'madscold@gmail.com';
             const twoFa = sessionStorage.getItem('admin_2fa');
             
             checkInactivity(); // Valida inatividade antes de qualquer requisição
