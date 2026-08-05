@@ -289,9 +289,14 @@ app.listen(PORT, async () => {
     const url = `http://localhost:${PORT}/admin.html`;
     console.log(`🚀 Servidor Administrativo rodando em: ${url}`);
 
-    // Abre o navegador automaticamente apenas em modo de desenvolvimento
-    if (process.env.NODE_ENV === 'development') {
-        await open(url);
+    // Abre o navegador automaticamente ao iniciar o servidor localmente
+    if (process.env.NODE_ENV !== 'production') {
+        try {
+            await open(url);
+            console.log(`🌐 Navegador aberto automaticamente em: ${url}`);
+        } catch (err) {
+            console.warn(`⚠️ Erro ao abrir o navegador automaticamente:`, err.message);
+        }
     }
 });
 
