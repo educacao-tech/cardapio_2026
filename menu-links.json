@@ -452,13 +452,83 @@
                     "fundamental-gtl": "https://drive.google.com/file/d/1ilERuh1fsMQaQn3rYYbjAKgwj-Ht9FIZ/view?usp=drive_link",
                     "etec": "https://drive.google.com/file/d/1YZEXkpz2YTODGVlRaj5otpyB7j_BbFQ-/view?usp=drive_link"
                 }
-            },
+            }
+        ],
+        "setembro": [
             {
-                "weekId": "semana5-ago",
-                "title": "5ª SEM. - 31/08 a 04/09",
+                "weekId": "semana1-set",
+                "title": "1ª SEM. - 31/08 a 04/09",
                 "startDate": "2026-08-31",
                 "endDate": "2026-09-04",
-                "active": false,
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-set",
+                "title": "2ª SEM. - 07/09 a 11/09",
+                "startDate": "2026-09-07",
+                "endDate": "2026-09-11",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana3-set",
+                "title": "3ª SEM. - 14/09 a 18/09",
+                "startDate": "2026-09-14",
+                "endDate": "2026-09-18",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana4-set",
+                "title": "4ª SEM. - 21/09 a 25/09",
+                "startDate": "2026-09-21",
+                "endDate": "2026-09-25",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana5-set",
+                "title": "5ª SEM. - 28/09 a 02/10",
+                "startDate": "2026-09-28",
+                "endDate": "2026-10-02",
+                "active": true,
                 "links": {
                     "creche-m-verde": "#",
                     "creches": "#",

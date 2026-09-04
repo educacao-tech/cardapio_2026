@@ -284,21 +284,34 @@ app.post('/api/notify-update', loginLimiter, authMiddleware, (req, res) => {
 // Servidor de arquivos estáticos
 app.use(express.static(path.join(__dirname, '.')));
 
-const PORT = process.env.PORT || 5500;
-app.listen(PORT, async () => {
-    const url = `http://localhost:${PORT}/admin.html`;
-    console.log(`🚀 Servidor Administrativo rodando em: ${url}`);
+let PORT = parseInt(process.env.PORT, 10) || 5500;
 
-    // Abre o navegador automaticamente ao iniciar o servidor localmente
-    if (process.env.NODE_ENV !== 'production') {
-        try {
-            await open(url);
-            console.log(`🌐 Navegador aberto automaticamente em: ${url}`);
-        } catch (err) {
-            console.warn(`⚠️ Erro ao abrir o navegador automaticamente:`, err.message);
+function startServer(portToTry) {
+    const server = app.listen(portToTry, async () => {
+        const url = `http://localhost:${portToTry}/admin.html`;
+        console.log(`🚀 Servidor Administrativo rodando em: ${url}`);
+
+        if (process.env.NODE_ENV !== 'production') {
+            try {
+                await open(url);
+                console.log(`🌐 Navegador aberto automaticamente em: ${url}`);
+            } catch (err) {
+                console.warn(`⚠️ Erro ao abrir o navegador automaticamente:`, err.message);
+            }
         }
-    }
-});
+    });
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.warn(`⚠️ Porta ${portToTry} ocupada. Tentando a porta ${portToTry + 1}...`);
+            startServer(portToTry + 1);
+        } else {
+            console.error('❌ Erro crítico no servidor:', err);
+        }
+    });
+}
+
+startServer(PORT);
 
 // Garante que o processo termine de forma limpa ao reiniciar
 process.on('SIGINT', () => {
