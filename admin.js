@@ -97,6 +97,646 @@ function setEditorMessage(msg, type = 'info') {
     editor.innerHTML = `<div class="editor-message editor-message-${type}">${msg}</div>`;
 }
 
+const monthNames = [
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+];
+
+/**
+ * Identifica o nome do mês atual ou o mais apropriado para o ano
+ */
+function getCurrentMonthName() {
+    const today = new Date();
+    const monthIndex = today.getMonth(); // 0 a 11
+    const detectedMonth = monthNames[monthIndex];
+    
+    // Se o mês atual detectado existir no cardápio de 2026, usa ele
+    if (fullMenuData[year] && fullMenuData[year][detectedMonth]) {
+        return detectedMonth;
+    }
+    
+    // Caso não exista ainda no JSON, procura o mês disponível mais próximo
+    if (fullMenuData[year]) {
+        const availableMonths = Object.keys(fullMenuData[year]);
+        // Tenta encontrar o mês mais recente disponível até o mês atual
+        for (let i = monthIndex; i >= 0; i--) {
+            if (availableMonths.includes(monthNames[i])) return monthNames[i];
+        }
+        if (availableMonths.length > 0) return availableMonths[0];
+    }
+    return detectedMonth || 'fevereiro';
+}
+
+/**
+ * Calcula o status de preenchimento de um mês específico
+ * @returns {'status-complete'|'status-pending'|'status-empty'}
+ */
+function calculateMonthStatus(month) {
+    if (!fullMenuData[year] || !fullMenuData[year][month] || !Array.isArray(fullMenuData[year][month])) {
+        return 'status-empty';
+    }
+    const weeks = fullMenuData[year][month];
+    if (weeks.length === 0) return 'status-empty';
+
+    const schoolKeys = Object.keys(linkLabels);
+    const totalSlots = weeks.length * schoolKeys.length;
+    let filledSlots = 0;
+
+    weeks.forEach(week => {
+        schoolKeys.forEach(k => {
+            const url = week.links ? week.links[k] : '';
+            if (url && url !== '#' && url.trim() !== '') {
+                filledSlots++;
+            }
+        });
+    });
+
+    if (filledSlots === 0) return 'status-empty';
+    if (filledSlots === totalSlots) return 'status-complete';
+    return 'status-pending';
+}
+
+/**
+ * Renderiza os chips de seleção de mês com indicadores visuais de status
+ */
+function renderMonthChips() {
+    const container = document.getElementById('month-chips-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const currentMonth = monthSelect.value;
+    const realCurrentMonth = getCurrentMonthName();
+
+    // Atualiza o texto do atalho no cabeçalho se o elemento existir
+    const currentMonthDisplay = document.getElementById('current-month-name-display');
+    if (currentMonthDisplay && realCurrentMonth) {
+        currentMonthDisplay.textContent = realCurrentMonth.charAt(0).toUpperCase() + realCurrentMonth.slice(1);
+    }
+
+    monthNames.forEach(month => {
+        const status = calculateMonthStatus(month);
+        const isSelected = month === currentMonth;
+        const isCurrent = month === realCurrentMonth;
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `month-chip ${isSelected ? 'active' : ''} ${isCurrent ? 'is-current-month' : ''}`;
+        chip.dataset.month = month;
+        if (isCurrent) {
+            chip.title = `${month.charAt(0).toUpperCase() + month.slice(1)} é o mês atual do calendário`;
+        }
+        
+        const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
+        chip.innerHTML = `
+            <span class="chip-status-dot ${status}"></span>
+            <span class="chip-name">${capMonth}</span>
+            ${isCurrent ? '<span class="chip-current-badge">ATUAL</span>' : ''}
+        `;
+
+        chip.onclick = () => {
+            if (monthSelect.value !== month) {
+                monthSelect.value = month;
+                monthSelect.dispatchEvent(new Event('change'));
+            }
+            chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        };
+
+        container.appendChild(chip);
+    });
+
+    // Centraliza suavemente o chip ativo (ou o mês atual) no seletor horizontal
+    setTimeout(() => {
+        const activeChip = container.querySelector('.month-chip.active') || container.querySelector('.month-chip.is-current-month');
+        if (activeChip) {
+            activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }, 100);
+}
+
+/**
+ * Calcula o status de preenchimento de uma semana específica
+ */
+function calculateWeekStatus(week) {
+    const schoolKeys = Object.keys(linkLabels);
+    const totalSlots = schoolKeys.length;
+    let filledSlots = 0;
+    const missingKeys = [];
+
+    schoolKeys.forEach(k => {
+        const url = week.links ? week.links[k] : '';
+        if (url && url !== '#' && url.trim() !== '') {
+            filledSlots++;
+        } else {
+            missingKeys.push(k);
+        }
+    });
+
+    return {
+        totalSlots,
+        filledSlots,
+        missingCount: totalSlots - filledSlots,
+        missingKeys,
+        isComplete: filledSlots === totalSlots,
+        status: (filledSlots === 0) ? 'status-empty' : ((filledSlots === totalSlots) ? 'status-complete' : 'status-pending')
+    };
+}
+
+/**
+ * Atualiza visualmente o badge da categoria (ex: ⚠️ Faltam X ou ✅ Completa)
+ */
+function updateCategoryHeaderBadge(inputElement) {
+    const section = inputElement.closest('.admin-category-section');
+    if (!section) return;
+
+    const inputs = Array.from(section.querySelectorAll('.link-input'));
+    const pendingCount = inputs.filter(inp => !inp.value || inp.value === '#' || inp.value.trim() === '').length;
+
+    let badge = section.querySelector('.category-pending-pill, .category-done-pill');
+    if (badge) {
+        if (pendingCount > 0) {
+            badge.className = 'category-pending-pill';
+            badge.textContent = `⚠️ Faltam ${pendingCount}`;
+        } else {
+            badge.className = 'category-done-pill';
+            badge.textContent = '✅ Completa';
+        }
+    }
+}
+
+/**
+ * Atualiza visualmente o badge de progresso da semana no card
+ */
+function updateWeekCardBadge(inputElement) {
+    const card = inputElement.closest('.week-edit-card');
+    if (!card) return;
+
+    const inputs = Array.from(card.querySelectorAll('.link-input'));
+    const totalSlots = inputs.length;
+    const filledSlots = inputs.filter(inp => inp.value && inp.value !== '#' && inp.value.trim() !== '').length;
+
+    const badge = card.querySelector('.week-progress-badge');
+    if (badge) {
+        const isWeekDone = filledSlots === totalSlots;
+        badge.className = `week-progress-badge ${isWeekDone ? 'badge-success' : (filledSlots > 0 ? 'badge-warning' : 'badge-danger')}`;
+        badge.textContent = `${isWeekDone ? '✅' : (filledSlots > 0 ? '⚠️' : '❌')} ${filledSlots}/${totalSlots} Concluído`;
+    }
+}
+
+/**
+ * Função unificada chamada em tempo real sempre que um link é inserido, colado ou modificado
+ */
+function handleLinkChange(inputElement) {
+    const { month, index, key } = inputElement.dataset;
+    if (!month || index === undefined || !key) return;
+
+    validateInput(inputElement);
+    const cleanedVal = inputElement.value.trim();
+
+    // Atualiza os dados locais imediatamente
+    if (fullMenuData[year] && fullMenuData[year][month] && fullMenuData[year][month][index]) {
+        fullMenuData[year][month][index].links[key] = cleanedVal;
+    }
+
+    saveDraftToStorage();
+
+    // Atualiza classe is-pending-input dinamicamente
+    const isValReal = cleanedVal && cleanedVal !== '#' && cleanedVal !== '';
+    inputElement.classList.toggle('is-pending-input', !isValReal);
+
+    // Micro-pulso visual ao inserir link válido
+    if (inputElement.classList.contains('valid-link')) {
+        inputElement.classList.remove('valid-link-pulse');
+        void inputElement.offsetWidth;
+        inputElement.classList.add('valid-link-pulse');
+    }
+
+    // Atualiza badges visuais no card e categoria
+    updateCategoryHeaderBadge(inputElement);
+    updateWeekCardBadge(inputElement);
+
+    // Atualiza imediatamente a lista de pendências e todos os componentes reativos
+    updateUnsavedChangesUI();
+    updateDashboard();
+    updateKpiCards();
+    renderMonthChips();
+    renderWeekChips(month);
+    updatePendingPanel(month);
+}
+
+/**
+ * Renderiza o seletor visual de semanas (pílulas / mini-timeline)
+ */
+function renderWeekChips(month) {
+    const wrapper = document.getElementById('week-chips-wrapper');
+    const container = document.getElementById('week-chips-container');
+    const summary = document.getElementById('week-chips-summary');
+    if (!wrapper || !container) return;
+
+    if (!month || !fullMenuData[year] || !fullMenuData[year][month]) {
+        wrapper.style.display = 'none';
+        return;
+    }
+
+    const weeks = fullMenuData[year][month];
+    if (weeks.length === 0) {
+        wrapper.style.display = 'none';
+        return;
+    }
+
+    wrapper.style.display = 'block';
+    container.innerHTML = '';
+
+    const todayIso = new Date().toISOString().split('T')[0];
+    let completedWeeksCount = 0;
+    let totalMissingLinks = 0;
+
+    weeks.forEach(w => {
+        const st = calculateWeekStatus(w);
+        if (st.isComplete) completedWeeksCount++;
+        totalMissingLinks += st.missingCount;
+    });
+
+    if (summary) {
+        summary.textContent = `${completedWeeksCount} de ${weeks.length} semanas completas ${totalMissingLinks > 0 ? `• ⚠️ ${totalMissingLinks} link${totalMissingLinks > 1 ? 's' : ''} pendente${totalMissingLinks > 1 ? 's' : ''}` : '• ✨ 100% Preenchido'}`;
+    }
+
+    const currentWeekVal = weekSelect.value || 'all';
+
+    // Chip "Todas as Semanas"
+    const allChip = document.createElement('button');
+    allChip.type = 'button';
+    allChip.className = `week-chip ${currentWeekVal === 'all' || currentWeekVal === '' ? 'active' : ''}`;
+    allChip.innerHTML = `
+        <span class="week-chip-title">👁️ Todas</span>
+        <span class="week-chip-badge ${totalMissingLinks === 0 ? 'badge-all-complete' : 'badge-all-pending'}">
+            ${totalMissingLinks === 0 ? '✅ 100%' : `⚠️ ${totalMissingLinks} pendentes`}
+        </span>
+    `;
+    allChip.onclick = () => {
+        if (weekSelect.value !== 'all') {
+            weekSelect.value = 'all';
+            renderMonth(month, null);
+            renderWeekChips(month);
+        }
+    };
+    container.appendChild(allChip);
+
+    // Chips individuais para cada semana
+    weeks.forEach((week, index) => {
+        const st = calculateWeekStatus(week);
+        const isCurrentCalendarWeek = week.startDate && week.endDate && (todayIso >= week.startDate && todayIso <= week.endDate);
+        const isSelected = currentWeekVal.toString() === index.toString();
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `week-chip ${isSelected ? 'active' : ''} ${isCurrentCalendarWeek ? 'is-current-week-chip' : ''}`;
+
+        const parts = week.title.split(' - ');
+        const shortName = parts[0];
+        const dateRange = parts[1] || '';
+
+        chip.innerHTML = `
+            <span class="chip-status-dot ${st.status}"></span>
+            <div class="week-chip-info">
+                <span class="week-chip-name">${shortName} ${isCurrentCalendarWeek ? '⭐' : ''}</span>
+                <span class="week-chip-dates">${dateRange}</span>
+            </div>
+            <span class="week-chip-badge ${st.isComplete ? 'badge-week-ok' : 'badge-week-alert'}">
+                ${st.isComplete ? '✅ 8/8' : `⚠️ Faltam ${st.missingCount}`}
+            </span>
+        `;
+
+        chip.onclick = () => {
+            weekSelect.value = index.toString();
+            renderMonth(month, index);
+            renderWeekChips(month);
+            
+            setTimeout(() => {
+                const targetCard = editor.querySelector('.week-edit-card');
+                if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        };
+
+        container.appendChild(chip);
+    });
+}
+
+/**
+ * Atualiza o painel da Central de Pendências
+ */
+function updatePendingPanel(month) {
+    const panel = document.getElementById('pending-links-panel');
+    const heading = document.getElementById('pending-panel-heading');
+    const list = document.getElementById('pending-links-list');
+    if (!panel || !heading || !list) return;
+
+    if (!month || !fullMenuData[year] || !fullMenuData[year][month]) {
+        panel.style.display = 'none';
+        return;
+    }
+
+    const weeks = fullMenuData[year][month];
+    const pendingItems = [];
+    const schoolKeys = Object.keys(linkLabels);
+
+    weeks.forEach((week, weekIndex) => {
+        schoolKeys.forEach(k => {
+            const url = week.links ? week.links[k] : '';
+            if (!url || url === '#' || url.trim() === '') {
+                pendingItems.push({
+                    weekIndex,
+                    weekTitle: week.title,
+                    schoolKey: k,
+                    schoolLabel: linkLabels[k].text,
+                    schoolIcon: linkLabels[k].icon
+                });
+            }
+        });
+    });
+
+    if (pendingItems.length === 0) {
+        panel.style.display = 'block';
+        panel.classList.add('panel-completed');
+        const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
+        heading.innerHTML = `✨ <strong>Mês 100% Preenchido!</strong> Todos os links de ${capMonth} estão configurados.`;
+        list.innerHTML = `<div class="pending-empty-state">🎉 Excelente trabalho! Todos os cardápios de ${capMonth} estão prontos para publicação.</div>`;
+        return;
+    }
+
+    panel.style.display = 'block';
+    panel.classList.remove('panel-completed');
+    const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
+    heading.innerHTML = `⚡ <strong>Central de Pendências</strong> (${pendingItems.length} link${pendingItems.length > 1 ? 's' : ''} aguardando em ${capMonth})`;
+
+    list.innerHTML = '';
+    pendingItems.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'pending-item-row';
+        row.setAttribute('role', 'button');
+        row.setAttribute('tabindex', '0');
+        row.title = `Clique para ir direto ao campo de ${item.schoolLabel} (${item.weekTitle})`;
+        row.innerHTML = `
+            <div class="pending-item-info">
+                <span class="pending-week-tag">${item.weekTitle.split(' - ')[0]}</span>
+                <span class="pending-school-name" title="${item.schoolLabel}">${item.schoolIcon} ${item.schoolLabel}</span>
+            </div>
+            <button type="button" class="btn-small pending-jump-btn" title="Ir diretamente para este campo">
+                Preencher ➔
+            </button>
+        `;
+
+        const doJump = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            jumpToSpecificField(month, item.weekIndex, item.schoolKey);
+        };
+
+        row.onclick = doJump;
+        row.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                doJump(e);
+            }
+        };
+
+        const btn = row.querySelector('.pending-jump-btn');
+        if (btn) {
+            btn.onclick = doJump;
+        }
+
+        list.appendChild(row);
+    });
+}
+
+/**
+ * Salta diretamente para um campo específico com expansão automática e pulso de foco
+ */
+function jumpToSpecificField(month, weekIndex, schoolKey) {
+    const curMonth = month || monthSelect.value;
+
+    // Se o mês for diferente do atualmente carregado, troca o mês
+    if (month && monthSelect.value !== month) {
+        monthSelect.value = month;
+        monthSelect.dispatchEvent(new Event('change'));
+    } else if (weekSelect.value !== 'all' && weekSelect.value.toString() !== weekIndex.toString()) {
+        // Se a semana estiver filtrada em outra semana, reexibe todas as semanas
+        weekSelect.value = 'all';
+        renderMonth(curMonth, null);
+        renderWeekChips(curMonth);
+    }
+
+    const executeFocus = () => {
+        // Busca o campo sem depender da formatação da string do mês, garantindo correspondência 100% precisa
+        const input = editor.querySelector(`.link-input[data-index="${weekIndex}"][data-key="${schoolKey}"]`) ||
+                      editor.querySelector(`.link-input[data-key="${schoolKey}"]`);
+
+        if (!input) {
+            console.warn(`Campo não encontrado para semana ${weekIndex} e chave ${schoolKey}`);
+            return;
+        }
+
+        // 1. Expande a categoria se estiver recolhida
+        const categorySection = input.closest('.admin-category-section');
+        if (categorySection) {
+            categorySection.classList.remove('collapsed');
+            const toggleBtn = categorySection.querySelector('.action-toggle-category');
+            if (toggleBtn) toggleBtn.textContent = '🔽';
+            void categorySection.offsetHeight; // Força recálculo de layout
+        }
+
+        // 2. Garante que o input group esteja visível (caso filtro de pendentes esteja ativo)
+        const inputGroup = input.closest('.school-input-group');
+        if (inputGroup) {
+            inputGroup.style.display = '';
+            void inputGroup.offsetHeight;
+        }
+
+        // 3. Posiciona a tela no campo de forma imediata (sem animação de rolagem)
+        input.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+
+        // 4. Move o foco imediatamente e seleciona o conteúdo (ex: "#") para substituição direta por Ctrl+V
+        input.focus({ preventScroll: true });
+        input.select();
+
+        // 5. Aciona o efeito visual pulsante para guiar o olhar do usuário
+        input.classList.remove('focus-pulse');
+        void input.offsetWidth;
+        input.classList.add('focus-pulse');
+
+        // 6. Confirma foco e seleção imediatamente
+        input.focus({ preventScroll: true });
+        input.select();
+
+        const schoolName = (linkLabels && linkLabels[schoolKey]) ? linkLabels[schoolKey].text : schoolKey;
+        const weekNum = (parseInt(weekIndex) + 1) || 1;
+        showToast(`🎯 Direcionado para: ${schoolName} (${weekNum}ª Semana)`, 'info', 2000);
+    };
+
+    requestAnimationFrame(() => {
+        setTimeout(executeFocus, 30);
+    });
+}
+
+/**
+ * Calcula o total de alterações não salvas comparando com originalMenuData
+ */
+function calculateUnsavedChangesCount() {
+    if (!originalMenuData[year] || !fullMenuData[year]) return 0;
+    let count = 0;
+    const months = Object.keys(fullMenuData[year]);
+
+    months.forEach(m => {
+        const fullWeeks = fullMenuData[year][m] || [];
+        const origWeeks = (originalMenuData[year] && originalMenuData[year][m]) || [];
+        
+        fullWeeks.forEach((fw, idx) => {
+            const ow = origWeeks[idx];
+            if (!ow) {
+                count++;
+                return;
+            }
+            if (fw.active !== ow.active) count++;
+            if (fw.title !== ow.title) count++;
+
+            const keys = Object.keys(linkLabels);
+            keys.forEach(k => {
+                const fVal = (fw.links && fw.links[k]) || '#';
+                const oVal = (ow.links && ow.links[k]) || '#';
+                if (fVal !== oVal) count++;
+            });
+        });
+    });
+    return count;
+}
+
+/**
+ * Atualiza o badge e texto do botão de salvar com o número de alterações pendentes
+ */
+function updateUnsavedChangesUI() {
+    const count = calculateUnsavedChangesCount();
+    hasUnsavedChanges = count > 0;
+    
+    const badge = document.getElementById('unsaved-count-badge');
+    const textEl = document.getElementById('save-btn-text');
+    const saveBtn = document.getElementById('save-btn');
+
+    if (badge) {
+        if (count > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    if (textEl) {
+        if (count > 0) {
+            textEl.textContent = `Salvar (${count} ${count === 1 ? 'alteração' : 'alterações'})`;
+        } else {
+            textEl.textContent = 'Salvar Alterações';
+        }
+    }
+
+    if (saveBtn) {
+        saveBtn.classList.toggle('btn-dirty', count > 0);
+    }
+}
+
+/**
+ * Atualiza os Cards de KPIs no topo com animações e dados em tempo real
+ */
+function updateKpiCards() {
+    const kpiContainer = document.getElementById('kpi-cards-container');
+    const month = monthSelect.value;
+
+    if (!month || !fullMenuData[year] || !fullMenuData[year][month]) {
+        if (kpiContainer) kpiContainer.style.display = 'none';
+        return;
+    }
+
+    if (kpiContainer) kpiContainer.style.display = 'grid';
+    const weeks = fullMenuData[year][month];
+    const schoolKeys = Object.keys(linkLabels);
+
+    const totalLinks = weeks.length * schoolKeys.length;
+    let filledLinks = 0;
+    let activeWeeks = 0;
+
+    weeks.forEach(week => {
+        if (week.active) activeWeeks++;
+        schoolKeys.forEach(k => {
+            const url = week.links ? week.links[k] : '';
+            if (url && url !== '#' && url.trim() !== '') filledLinks++;
+        });
+    });
+
+    const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
+    const missingCount = totalLinks - filledLinks;
+
+    // Card 1: Status Geral
+    const percentVal = document.getElementById('kpi-percent-val');
+    const progressFill = document.getElementById('kpi-progress-fill');
+    const statusBadge = document.getElementById('kpi-status-badge');
+    const filledRatio = document.getElementById('kpi-filled-ratio');
+
+    if (percentVal) percentVal.textContent = `${percentage}%`;
+    if (progressFill) progressFill.style.width = `${percentage}%`;
+    if (statusBadge) {
+        statusBadge.textContent = percentage === 100 ? '100% Completo' : 'Incompleto';
+        statusBadge.classList.toggle('complete', percentage === 100);
+    }
+    if (filledRatio) filledRatio.textContent = `${filledLinks} de ${totalLinks} links preenchidos`;
+
+    // Card 2: Links Pendentes
+    const pendingVal = document.getElementById('kpi-pending-val');
+    const pendingSub = document.getElementById('kpi-pending-sub');
+    if (pendingVal) pendingVal.textContent = missingCount;
+    if (pendingSub) {
+        pendingSub.textContent = missingCount === 0 ? 'Todos os links preenchidos ✨' : 'Aguardando inserção de link';
+    }
+
+    // Card 3: Semanas Ativas
+    const weeksVal = document.getElementById('kpi-weeks-val');
+    const weeksBadge = document.getElementById('kpi-weeks-badge');
+    const weeksSub = document.getElementById('kpi-weeks-sub');
+    if (weeksVal) weeksVal.textContent = `${activeWeeks} / ${weeks.length}`;
+    if (weeksBadge) {
+        weeksBadge.textContent = activeWeeks === weeks.length ? 'Todas Visíveis' : `${activeWeeks} Ativas`;
+    }
+    if (weeksSub) {
+        weeksSub.textContent = `${activeWeeks} de ${weeks.length} visíveis para os alunos`;
+    }
+}
+
+/**
+ * Busca informações do último commit do GitHub para o KPI de sincronização
+ */
+async function fetchGitCommitInfo() {
+    const timeEl = document.getElementById('kpi-sync-time');
+    const authorEl = document.getElementById('kpi-sync-author');
+    if (!timeEl || !authorEl) return;
+
+    try {
+        const apiUrl = (['5501', '5502', '3000'].includes(window.location.port)) ? 'http://localhost:5500/api' : '/api';
+        const res = await fetch(`${apiUrl}/github-commit`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.date) {
+                const d = new Date(data.date);
+                const timeStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                timeEl.textContent = timeStr;
+                authorEl.textContent = `Por ${data.author || 'admin'} (${data.hash || 'recém'})`;
+                authorEl.title = data.message || '';
+                return;
+            }
+        }
+    } catch (e) {}
+    timeEl.textContent = 'Recente';
+    authorEl.textContent = 'Sincronizado com GitHub';
+}
+
 /**
  * Atualiza as estatísticas do dashboard (links totais, preenchidos e faltando)
  */
@@ -195,10 +835,31 @@ async function init(force = false) {
         if (res.ok) {
             fullMenuData = await res.json();
             originalMenuData = JSON.parse(JSON.stringify(fullMenuData));
-            setEditorMessage('✅ Dados carregados. Selecione um mês para começar.', 'success');
             monthSelect.disabled = false; // Habilita o seletor de mês
             document.getElementById('login-overlay').style.display = 'none';
+
+            // Coloca o mês atual (ou rascunho salvo) automaticamente em primeiro plano
+            const draftStr = localStorage.getItem(DRAFT_KEY);
+            let draftMonth = null;
+            if (draftStr) {
+                try {
+                    const parsed = JSON.parse(draftStr);
+                    if (parsed && parsed.month) draftMonth = parsed.month;
+                } catch(e) {}
+            }
+
+            const monthToLoad = draftMonth || getCurrentMonthName();
+            if (monthToLoad && fullMenuData[year] && fullMenuData[year][monthToLoad]) {
+                monthSelect.value = monthToLoad;
+                monthSelect.dispatchEvent(new Event('change'));
+            } else {
+                setEditorMessage('✅ Dados carregados. Selecione um mês para começar.', 'success');
+                renderMonthChips();
+            }
+
             checkDraftBanner();
+            updateUnsavedChangesUI();
+            fetchGitCommitInfo();
 
             // Verifica o status do ambiente e exibe a tarja se for desenvolvimento
             const envRes = await fetch(`${apiUrl}/env-status`);
@@ -259,12 +920,24 @@ monthSelect.addEventListener('change', (e) => {
 
         renderMonth(month);
         updateDashboard();
+        updateKpiCards();
+        renderMonthChips();
+        renderWeekChips(month);
+        updatePendingPanel(month);
     } else if (month && (!fullMenuData[year] || !fullMenuData[year][month])) {
         setEditorMessage(`⚠️ O mês de <strong>${month}</strong> ainda não existe no arquivo JSON.`, 'warning');
         updateDashboard();
+        updateKpiCards();
+        renderMonthChips();
+        renderWeekChips(null);
+        updatePendingPanel(null);
     } else {
         setEditorMessage('Selecione um mês para editar as semanas.');
         updateDashboard();
+        updateKpiCards();
+        renderMonthChips();
+        renderWeekChips(null);
+        updatePendingPanel(null);
     }
 });
 
@@ -273,6 +946,7 @@ weekSelect.addEventListener('change', (e) => {
     const val = e.target.value;
     if (month) {
         renderMonth(month, (val === 'all' || val === '') ? null : val);
+        renderWeekChips(month);
     }
 });
 
@@ -345,9 +1019,13 @@ function renderMonth(month, specificIndex = null) {
 
     const schoolKeys = Object.keys(linkLabels);
 
+    const todayIso = new Date().toISOString().split('T')[0];
+
     allWeeks.forEach((week, index) => {
         // Se uma semana específica foi selecionada no filtro, ignora as outras
         if (specificIndex !== null && index.toString() !== specificIndex.toString()) return;
+
+        const isCurrentWeek = week.startDate && week.endDate && (todayIso >= week.startDate && todayIso <= week.endDate);
 
         // Progresso por semana
         const totalWeekKeys = schoolKeys.length;
@@ -362,14 +1040,29 @@ function renderMonth(month, specificIndex = null) {
         const badgeText = `${badgeIcon} ${filledWeekKeys}/${totalWeekKeys} Concluído`;
 
         const weekDiv = document.createElement('div');
-        weekDiv.className = 'week-edit-card';
+        weekDiv.className = `week-edit-card ${isCurrentWeek ? 'current-week-card' : ''}`;
         
         let categoriesHtml = '';
         categories.forEach(cat => {
             let inputsHtml = '';
+
+            // Calcula pendências nesta categoria
+            const pendingInCategory = cat.keys.filter(key => {
+                const linkVal = week.links ? week.links[key] : '';
+                return !linkVal || linkVal === '#' || linkVal.trim() === '';
+            }).length;
+
+            // Se for a semana atual OU houver links pendentes, a categoria se expande automaticamente!
+            const isCollapsed = !isCurrentWeek && pendingInCategory === 0;
+            const toggleIcon = isCollapsed ? '▶️' : '🔽';
+
+            const categoryBadge = pendingInCategory > 0 
+                ? `<span class="category-pending-pill">⚠️ Faltam ${pendingInCategory}</span>`
+                : `<span class="category-done-pill">✅ Completa</span>`;
+
             cat.keys.forEach(key => {
                 const label = linkLabels[key];
-                const linkVal = week.links[key] || '#';
+                const linkVal = week.links ? week.links[key] : '';
                 const isPending = !linkVal || linkVal === '#' || linkVal.trim() === '';
                 const displayStyle = (showOnlyPending && !isPending) ? 'display: none;' : '';
 
@@ -377,21 +1070,22 @@ function renderMonth(month, specificIndex = null) {
                     <div class="input-group admin-input-group school-input-group" data-school-type="${key}" style="${displayStyle}">
                         <label class="compact-label"><span class="school-icon" style="cursor: pointer;" title="Clique para testar este link">${label.icon}</span> ${label.text}:</label>
                         <div class="compact-input-wrapper">
-                            <input type="text" value="${linkVal}" 
-                                data-month="${month}" data-index="${index}" data-key="${key}" class="link-input">
+                            <input type="text" value="${linkVal || '#'}" 
+                                placeholder="${isPending ? '⚠️ Link pendente (#) - Cole a URL aqui...' : 'https://...'}"
+                                data-month="${month}" data-index="${index}" data-key="${key}" class="link-input ${isPending ? 'is-pending-input' : ''}">
                             <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;"></span>
                             <button class="btn-small action-preview-pdf" title="Pré-visualizar PDF">👁️</button>
                         </div>
                     </div>
                 `;
             });
-            categoriesHtml += `
-                <div class="admin-category-section collapsed">
-                    <div class="admin-category-header">
-                        <h4 class="admin-category-title">${cat.title}</h4>
-                        <div style="display: flex; gap: 8px;">
 
-                            <button class="btn-small action-toggle-category" title="Ocultar/Expandir Categoria">▶️</button>
+            categoriesHtml += `
+                <div class="admin-category-section ${isCollapsed ? 'collapsed' : ''}">
+                    <div class="admin-category-header">
+                        <h4 class="admin-category-title">${cat.title} ${categoryBadge}</h4>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-small action-toggle-category" title="Ocultar/Expandir Categoria">${toggleIcon}</button>
                             <button class="btn-small action-bulk-paste" data-keys="${cat.keys.join(',')}" data-index="${index}" title="Colar mesmo link para toda esta categoria">📋 Colar p/ todos</button>
                         </div>
                     </div>
@@ -403,8 +1097,9 @@ function renderMonth(month, specificIndex = null) {
         weekDiv.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; border-bottom: 1px solid var(--medium-gray); padding-bottom: 3px; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <h3 style="margin:0; font-size: 1rem; display: inline-flex; align-items: center;">
+                    <h3 style="margin:0; font-size: 1rem; display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px;">
                         ${week.title}
+                        ${isCurrentWeek ? '<span class="week-current-badge">📍 SEMANA ATUAL</span>' : ''}
                         <span class="week-progress-badge ${badgeClass}">${badgeText}</span>
                     </h3>
                     <div class="week-toolbar" style="margin-top: 3px; display: flex; gap: 4px; flex-wrap: wrap;">
@@ -523,17 +1218,33 @@ function renderMonth(month, specificIndex = null) {
     // Listeners para salvar alterações em tempo real no objeto local e no rascunho
     editor.querySelectorAll('.link-input').forEach(input => {
         validateInput(input); // Validação inicial ao carregar o mês
-        input.oninput = (e) => {
-            const { month, index, key } = e.target.dataset;
-            fullMenuData[year][month][index].links[key] = e.target.value;
-            hasUnsavedChanges = true;
-            document.getElementById('save-btn').classList.add('btn-dirty');
-            saveDraftToStorage();
-            updateDashboard();
-            validateInput(e.target);
+
+        // Dispara atualização automática instantânea em digitação, colagem e alteração
+        input.addEventListener('input', () => handleLinkChange(input));
+        input.addEventListener('change', () => handleLinkChange(input));
+        input.addEventListener('paste', () => {
+            setTimeout(() => handleLinkChange(input), 15);
+        });
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                handleLinkChange(input);
+            }
+        });
+
+        // Atalho de teclado rápido: Apertar Enter pula automaticamente para o próximo campo vazio!
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleLinkChange(input);
+                goToNextEmptyLink();
+            }
         };
+
         // Verifica acessibilidade ao perder o foco (blur) ou ao carregar
-        input.onblur = () => checkAccessibility(input);
+        input.onblur = () => {
+            handleLinkChange(input);
+            checkAccessibility(input);
+        };
         checkAccessibility(input);
     });
 
@@ -544,12 +1255,19 @@ function renderMonth(month, specificIndex = null) {
         cb.onchange = (e) => {
             const { month, index } = e.target.dataset;
             fullMenuData[year][month][index].active = e.target.checked;
-            hasUnsavedChanges = true;
             saveDraftToStorage();
+            updateUnsavedChangesUI();
+            updateKpiCards();
+            renderWeekChips(month);
         };
     });
 
     updateDashboard(); // Garante que o dashboard atualize após ações de massa (limpar, copiar, etc)
+    updateKpiCards();
+    updateUnsavedChangesUI();
+    renderMonthChips();
+    renderWeekChips(month);
+    updatePendingPanel(month);
 }
 
 async function saveData(notify = false) {
@@ -572,7 +1290,6 @@ async function saveData(notify = false) {
     }
 
     const btn = notify ? document.getElementById('notify-btn') : document.getElementById('save-btn');
-    const originalText = btn.innerText;
     btn.innerHTML = '<span class="btn-spinner"></span> Salvando...';
     btn.disabled = true;
 
@@ -599,16 +1316,26 @@ async function saveData(notify = false) {
                 showToast("✅ Salvo fisicamente em menu-links.json e publicado no GitHub! 🚀", 'success', 4000);
             }
             hasUnsavedChanges = false;
-            document.getElementById('save-btn').classList.remove('btn-dirty');
             clearDraftFromStorage();
             originalMenuData = JSON.parse(JSON.stringify(fullMenuData));
+            updateUnsavedChangesUI();
+            updateKpiCards();
+            renderMonthChips();
+            renderWeekChips(monthSelect.value);
+            updatePendingPanel(monthSelect.value);
+            fetchGitCommitInfo();
         } else {
             showToast("❌ Erro ao salvar dados no servidor.", 'error');
         }
     } catch (err) {
         showToast("❌ Falha na conexão com o servidor.", 'error');
     } finally {
-        btn.innerText = originalText;
+        if (notify) {
+            btn.innerHTML = '<span class="notify-icon">🔔</span> <span>Salvar e Notificar</span>';
+        } else {
+            btn.innerHTML = `<span class="save-icon">💾</span> <span id="save-btn-text">Salvar Alterações</span> <span id="unsaved-count-badge" class="unsaved-badge" style="display: none;">0</span>`;
+            updateUnsavedChangesUI();
+        }
         btn.disabled = false;
     }
 }
@@ -790,8 +1517,8 @@ function initBackToTop() {
  * e move o foco para ele.
  */
 function goToNextEmptyLink() {
-    const inputs = Array.from(document.querySelectorAll('.link-input'));
-    const nextEmpty = inputs.find(input => input.value === '#' || input.value.trim() === '');
+    const inputs = Array.from(editor.querySelectorAll('.link-input'));
+    const nextEmpty = inputs.find(input => !input.value || input.value === '#' || input.value.trim() === '');
     
     if (nextEmpty) {
         const categorySection = nextEmpty.closest('.admin-category-section');
@@ -799,26 +1526,88 @@ function goToNextEmptyLink() {
             categorySection.classList.remove('collapsed');
             const toggleBtn = categorySection.querySelector('.action-toggle-category');
             if (toggleBtn) toggleBtn.textContent = '🔽';
+            void categorySection.offsetHeight;
         }
 
-        nextEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const inputGroup = nextEmpty.closest('.school-input-group');
+        if (inputGroup) {
+            inputGroup.style.display = '';
+            void inputGroup.offsetHeight;
+        }
+
+        nextEmpty.scrollIntoView({ behavior: 'instant', block: 'nearest' });
         
-        setTimeout(() => {
-            nextEmpty.focus();
-            nextEmpty.classList.add('shake');
-            setTimeout(() => nextEmpty.classList.remove('shake'), 400);
-        }, 400);
+        nextEmpty.focus({ preventScroll: true });
+        nextEmpty.select();
+
+        nextEmpty.classList.remove('focus-pulse');
+        void nextEmpty.offsetWidth;
+        nextEmpty.classList.add('focus-pulse');
+
+        nextEmpty.focus({ preventScroll: true });
+        nextEmpty.select();
+
+        showToast("🎯 Foco no próximo link pendente. Cole com Ctrl+V e aperte Enter!", "info", 2000);
     } else {
-        showToast("✨ Excelente! Todos os links visíveis foram preenchidos.", "success");
+        showToast("✨ Excelente! Todos os links visíveis deste mês foram preenchidos.", "success");
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     initTheme(); // Carrega o tema imediatamente
     initBackToTop();
+
+    // Toggle da Central de Pendências
+    const pendingToggle = document.getElementById('pending-panel-toggle');
+    const pendingPanel = document.getElementById('pending-links-panel');
+    if (pendingToggle && pendingPanel) {
+        pendingToggle.onclick = (e) => {
+            if (e.target.closest('#btn-next-pending-auto')) return;
+            pendingPanel.classList.toggle('collapsed');
+        };
+    }
+
+    const nextPendingAutoBtn = document.getElementById('btn-next-pending-auto');
+    if (nextPendingAutoBtn) {
+        nextPendingAutoBtn.onclick = (e) => {
+            e.stopPropagation();
+            goToNextEmptyLink();
+        };
+    }
     
     const nextBtn = document.getElementById('next-empty-btn');
     if (nextBtn) nextBtn.onclick = goToNextEmptyLink;
+
+    const kpiPendingCard = document.getElementById('kpi-pending-card');
+    if (kpiPendingCard) {
+        kpiPendingCard.onclick = goToNextEmptyLink;
+        kpiPendingCard.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                goToNextEmptyLink();
+            }
+        };
+    }
+
+    const jumpCurrentBtn = document.getElementById('btn-jump-current-month');
+    if (jumpCurrentBtn) {
+        jumpCurrentBtn.onclick = () => {
+            const cur = getCurrentMonthName();
+            if (cur) {
+                if (monthSelect.value !== cur) {
+                    monthSelect.value = cur;
+                    monthSelect.dispatchEvent(new Event('change'));
+                }
+                showToast(`📅 Mês de ${cur.charAt(0).toUpperCase() + cur.slice(1)} em primeiro plano!`, 'info');
+                
+                const container = document.getElementById('month-chips-container');
+                if (container) {
+                    const activeChip = container.querySelector('.month-chip.active') || container.querySelector('.month-chip.is-current-month');
+                    if (activeChip) activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }
+        };
+    }
 
     // Atalhos globais de teclado
     window.addEventListener('keydown', (e) => {

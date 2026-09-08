@@ -371,14 +371,115 @@
     </script>
 
     <div class="admin-container">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
             <h1 style="margin: 0; color: var(--primary-color); flex: 1; text-align: center;">🛠️ Painel Administrativo</h1>
             <button type="button" class="theme-toggle-btn" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Alternar tema">🌙</button>
         </div>
         <div id="status-msg"></div>
 
-        <div class="controls-wrapper" style="box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--medium-gray);">
-            <select id="select-month" disabled>
+        <!-- Cards de KPIs do Topo (Resumo do Mês Selecionado) -->
+        <div id="kpi-cards-container" class="kpi-cards-grid" style="display: none;">
+            <div class="kpi-card" id="kpi-progress-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Status Geral</span>
+                    <span class="kpi-icon">📊</span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpi-percent-val">0%</span>
+                    <span class="kpi-badge-status" id="kpi-status-badge">Incompleto</span>
+                </div>
+                <div class="kpi-progress-track">
+                    <div class="kpi-progress-fill" id="kpi-progress-fill" style="width: 0%;"></div>
+                </div>
+                <span class="kpi-sub" id="kpi-filled-ratio">0 de 0 links preenchidos</span>
+            </div>
+
+            <div class="kpi-card kpi-card-clickable" id="kpi-pending-card" role="button" tabindex="0" title="Clique para focar no próximo link pendente">
+                <div class="kpi-header">
+                    <span class="kpi-title">Links Pendentes</span>
+                    <span class="kpi-icon">⚠️</span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value kpi-alert-val" id="kpi-pending-val">0</span>
+                    <span class="kpi-jump-badge">Pular ➔</span>
+                </div>
+                <span class="kpi-sub" id="kpi-pending-sub">Aguardando inserção de link</span>
+            </div>
+
+            <div class="kpi-card" id="kpi-active-weeks-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Semanas Ativas</span>
+                    <span class="kpi-icon">👁️</span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpi-weeks-val">0 / 0</span>
+                    <span class="kpi-badge-status kpi-badge-active" id="kpi-weeks-badge">Públicas</span>
+                </div>
+                <span class="kpi-sub" id="kpi-weeks-sub">Visíveis no cardápio escolar</span>
+            </div>
+
+            <div class="kpi-card" id="kpi-sync-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Última Publicação</span>
+                    <span class="kpi-icon">🚀</span>
+                </div>
+                <div class="kpi-value-small" id="kpi-sync-time">Consultando...</div>
+                <span class="kpi-sub" id="kpi-sync-author">Sincronizado com GitHub</span>
+            </div>
+        </div>
+
+        <!-- Seletor de Meses em Chips / Pílulas com Status Coloridos -->
+        <div class="month-chips-wrapper">
+            <div class="month-chips-header">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span class="month-chips-title">MESES DO ANO DE 2026</span>
+                    <button type="button" id="btn-jump-current-month" class="btn-current-month-shortcut" title="Colocar o mês atual em primeiro plano">
+                        📍 Mês Atual: <strong id="current-month-name-display" style="text-transform: capitalize;">Setembro</strong>
+                    </button>
+                </div>
+                <div class="month-chips-legend">
+                    <span class="legend-item"><span class="legend-dot status-complete"></span> 100% Preenchido</span>
+                    <span class="legend-item"><span class="legend-dot status-pending"></span> Pendente (#)</span>
+                    <span class="legend-item"><span class="legend-dot status-empty"></span> Vazio</span>
+                </div>
+            </div>
+            <div id="month-chips-container" class="month-chips-container">
+                <!-- Gerado dinamicamente no admin.js -->
+            </div>
+        </div>
+
+        <!-- Seletor de Semanas em Chips / Pílulas (Mini-Timeline) -->
+        <div id="week-chips-wrapper" class="week-chips-wrapper" style="display: none;">
+            <div class="week-chips-header">
+                <span class="week-chips-title">SEMANAS DO MÊS</span>
+                <span id="week-chips-summary" class="week-chips-summary">Calculando semanas...</span>
+            </div>
+            <div id="week-chips-container" class="week-chips-container">
+                <!-- Gerado dinamicamente no admin.js -->
+            </div>
+        </div>
+
+        <!-- Central de Pendências Rápida (Jump-to-Input) -->
+        <div id="pending-links-panel" class="pending-panel" style="display: none;">
+            <div class="pending-panel-header" id="pending-panel-toggle" role="button" tabindex="0" title="Clique para expandir/recolher a lista de pendências">
+                <div class="pending-panel-title">
+                    <span class="pending-pulse-dot"></span>
+                    <span id="pending-panel-heading">⚡ Central de Pendências</span>
+                </div>
+                <div class="pending-panel-controls">
+                    <button type="button" id="btn-next-pending-auto" class="btn-small btn-primary-accent" title="Pular para o próximo campo vazio">🎯 Pular p/ Próximo ➔</button>
+                    <span class="pending-panel-arrow" id="pending-panel-arrow">🔽</span>
+                </div>
+            </div>
+            <div id="pending-panel-body" class="pending-panel-body">
+                <div id="pending-links-list" class="pending-links-list">
+                    <!-- Lista de pendências gerada dinamicamente -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-wrapper" style="display: none;">
+            <select id="select-month" style="display: none;">
                 <option value="">Selecione um mês...</option>
                 <option value="janeiro">Janeiro</option>
                 <option value="fevereiro">Fevereiro</option>
@@ -394,13 +495,13 @@
                 <option value="dezembro">Dezembro</option>
             </select>
 
-            <select id="select-week" disabled>
+            <select id="select-week" disabled style="width: 100%;">
                 <option value="">Selecione uma semana...</option>
             </select>
         </div>
 
         <div id="editor-container">
-            <p>Selecione um mês para editar as semanas.</p>
+            <p>Selecione um mês acima para gerenciar as semanas do cardápio.</p>
         </div>
         <button id="back-to-top" title="Voltar ao topo">↑</button>
 
@@ -432,8 +533,9 @@
             </div>
         </div>
 
+        <!-- Barra de Ações Flutuante (Floating Dock) Reorganizada -->
         <div class="actions">
-            <!-- Badge de Progresso Compacto no Rodapé -->
+            <!-- Badge de Progresso Compacto no Rodapé (mantido para compatibilidade) -->
             <div id="admin-dashboard" class="progress-badge-footer" style="display: none;" title="Progresso de Preenchimento">
                 <span class="badge-label">PROGRESSO</span>
                 <span id="stat-percent">0%</span>
@@ -444,12 +546,40 @@
                 </div>
             </div>
 
-            <button type="button" id="save-btn" class="button creche-m-verde" style="flex: 1; min-width: 140px;">💾 Salvar Alterações</button>
-            <button type="button" id="notify-btn" class="button creches" style="flex: 1; min-width: 180px;">🔔 Salvar e Notificar Usuários</button>
-            <a href="index.html" target="_blank" class="button etec" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; flex-shrink: 0;" title="Visualizar Site Público">👁️</a>
-            <button type="button" id="view-history-btn" class="button fundamental-braga" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Ver Histórico de Alterações">📜</button>
-            <button type="button" id="theme-toggle" class="theme-toggle-btn" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Alternar tema">🌙</button>
-            <button type="button" id="logout-btn" class="logout-btn" style="flex-shrink: 0; min-width: 70px;">Sair</button>
+            <!-- Grupo 1: Ações de Gravação -->
+            <div class="actions-group actions-group-primary">
+                <button type="button" id="save-btn" class="button save-btn-main creche-m-verde" title="Salvar todas as alterações (Atalho: Ctrl+S)">
+                    <span class="save-icon">💾</span>
+                    <span id="save-btn-text">Salvar Alterações</span>
+                    <span id="unsaved-count-badge" class="unsaved-badge" style="display: none;">0</span>
+                </button>
+                <button type="button" id="notify-btn" class="button notify-btn-main creches" title="Salvar alterações no JSON e disparar notificação push">
+                    <span class="notify-icon">🔔</span>
+                    <span>Salvar e Notificar</span>
+                </button>
+            </div>
+
+            <div class="actions-divider"></div>
+
+            <!-- Grupo 2: Ações de Consulta e Visualização -->
+            <div class="actions-group actions-group-tools">
+                <a href="index.html" target="_blank" class="button action-icon-btn etec" title="Visualizar Site Público do Cardápio">
+                    <span>👁️</span>
+                </a>
+                <button type="button" id="view-history-btn" class="button action-icon-btn fundamental-braga" title="Ver Histórico de Auditoria">
+                    <span>📜</span>
+                </button>
+                <button type="button" id="theme-toggle" class="button action-icon-btn theme-toggle-btn" title="Alternar Tema (Claro/Escuro)">
+                    <span>🌙</span>
+                </button>
+            </div>
+
+            <div class="actions-divider"></div>
+
+            <!-- Grupo 3: Sessão -->
+            <div class="actions-group actions-group-session">
+                <button type="button" id="logout-btn" class="logout-btn" title="Encerrar sessão de administração">Sair</button>
+            </div>
         </div>
     </div>
 
