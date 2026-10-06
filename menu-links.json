@@ -566,14 +566,14 @@
                 "endDate": "2026-10-16",
                 "active": true,
                 "links": {
-                    "creche-m-verde": "#",
-                    "creches": "#",
-                    "fundamental-braga": "#",
-                    "fundamental-anna": "#",
-                    "fundamental-aaugusto": "#",
-                    "fundamental-esther": "#",
-                    "fundamental-gtl": "#",
-                    "etec": "#"
+                    "creche-m-verde": "https://docs.google.com/document/d/1mUebyU2gqiEDbevEEbBbPYcoaNt0S0de/edit",
+                    "creches": "https://docs.google.com/document/d/18V8jyb84SoAPOtWuemOmYtXjLAFkC9m-/edit",
+                    "fundamental-braga": "https://docs.google.com/document/d/1SfqSmgeT6gyMYH4AWZ3ErcH9vB1Y_1bf/edit",
+                    "fundamental-anna": "https://docs.google.com/document/d/1MYQLrBG-uaTHeaYlPx4d6FOvkEueEvBq/edit",
+                    "fundamental-aaugusto": "https://docs.google.com/document/d/1FWjG9tMutmX1S71v3nHnp1r6emhK8Wbm/edit",
+                    "fundamental-esther": "https://docs.google.com/document/d/1kWNxC0ZMoPjWqX-AZVTfkM3y8srAMdrq/edit",
+                    "fundamental-gtl": "https://docs.google.com/document/d/12VfxiDa5hSJKIhbgyVC4pGsN6_pg6H8s/edit",
+                    "etec": "https://docs.google.com/document/d/1BHJB_cxbSukCbyZjkzKakkLLwBqNxsgV/edit"
                 }
             },
             {
