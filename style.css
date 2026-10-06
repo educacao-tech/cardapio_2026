@@ -568,6 +568,30 @@
         transition: all 0.25s ease;
         white-space: nowrap;
         box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .featured-jump-btn::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -60%;
+        width: 40%;
+        height: 200%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.35) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(25deg);
+        animation: shimmerSlide 3.5s infinite ease-in-out;
+    }
+
+    @keyframes shimmerSlide {
+        0% { left: -60%; }
+        25%, 100% { left: 140%; }
     }
 
     .featured-jump-btn:hover {
@@ -945,19 +969,48 @@
     .button {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
+        justify-content: flex-start;
+        gap: 0.65rem;
         text-decoration: none;
         color: var(--white);
-        padding: 0.75rem 1rem;
-        border-radius: 10px;
-        text-align: center;
+        padding: 0.72rem 0.95rem;
+        border-radius: 12px;
+        text-align: left;
         font-size: 0.78rem;
         font-weight: 700;
         letter-spacing: 0.01em;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid transparent;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-school-icon {
+        font-size: 1.15rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+    }
+
+    .btn-school-name {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.25;
+    }
+
+    .btn-status-badge {
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 2px 5px;
+        border-radius: 10px;
+        line-height: 1;
+        margin-left: auto;
+        flex-shrink: 0;
+        user-select: none;
+        transition: all 0.2s ease;
     }
 
     .button:hover {
@@ -967,11 +1020,14 @@
 
     /* Estilo para botões sem link (desabilitados) */
     .button.disabled {
-        background-color: var(--medium-gray);
+        background-color: var(--medium-gray) !important;
+        color: var(--text-color-muted) !important;
         pointer-events: none;
-        /* Impede o clique */
         cursor: not-allowed;
-        filter: grayscale(50%);
+        filter: grayscale(40%);
+        border-color: transparent !important;
+        box-shadow: none !important;
+        opacity: 0.8;
     }
 
     /* Cores específicas dos botões */
@@ -1801,6 +1857,40 @@
 
 .modal-overlay.show .modal-content {
     transform: scale(1);
+}
+
+/* Leitor Público de Documentos (PDF / Docs) */
+.public-pdf-content {
+    max-width: 960px !important;
+    width: 94% !important;
+    height: 88vh;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.public-pdf-content .modal-header {
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--medium-gray);
+    background: var(--surface-color);
+}
+
+.pdf-loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--surface-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    transition: opacity 0.3s ease;
 }
 
 .modal-header {
@@ -3083,3 +3173,192 @@ body.admin-page {
         display: none;
     }
 }
+
+/* --- 5. Melhorias Visuais: Atalho de Busca, Favoritos, Progresso Circular e Leitor --- */
+
+/* Atalho / no campo de busca */
+.search-kbd-shortcut {
+    position: absolute;
+    right: 42px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-color-muted);
+    background: var(--background-color);
+    border: 1px solid var(--medium-gray);
+    border-radius: 6px;
+    padding: 2px 7px;
+    line-height: 1;
+    pointer-events: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    user-select: none;
+    transition: opacity 0.2s ease;
+}
+
+#school-search:focus + .search-kbd-shortcut {
+    opacity: 0;
+}
+
+/* Botão de Favoritar Escola nos Cards */
+.btn-fav-star {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0 4px;
+    line-height: 1;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, text-shadow 0.2s ease;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+.btn-fav-star:hover {
+    transform: scale(1.35) rotate(15deg);
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+}
+
+.button.is-favorite-school {
+    border: 2px solid #f59e0b !important;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    position: relative;
+}
+
+.button.is-favorite-school .btn-fav-star {
+    color: #fbbf24 !important;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+    transform: scale(1.15);
+}
+
+:root.dark-mode .button.is-favorite-school {
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.5), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Gráfico Circular de Progresso no Admin KPI */
+.kpi-circle-progress {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-circle-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.kpi-circle-bg {
+    stroke: var(--medium-gray);
+    stroke-width: 6;
+}
+
+.kpi-circle-fill {
+    stroke: var(--primary-color);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+}
+
+.kpi-circle-percentage {
+    position: absolute;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+}
+
+/* Modal Leitor de Cardápio Embutido */
+.public-pdf-content {
+    max-width: 1050px;
+    width: 95vw;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--surface-color);
+    border: 1px solid var(--medium-gray);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.pdf-modal-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pdf-loader-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--surface-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    transition: opacity 0.3s ease;
+}
+
+/* Modo de Impressão A4 Otimizado */
+@media print {
+    .main-header,
+    .controls-wrapper,
+    .featured-week-banner,
+    .main-footer,
+    #back-to-top,
+    .card-header-actions,
+    .btn-fav-star,
+    .modal-overlay,
+    .spinner-container,
+    .skeleton-wrapper {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    .main-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .columns-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10mm !important;
+        page-break-inside: avoid;
+    }
+
+    .button-column {
+        opacity: 1 !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        page-break-inside: avoid;
+        padding: 12px !important;
+    }
+
+    .button {
+        color: #000000 !important;
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}

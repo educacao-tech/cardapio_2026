@@ -15,6 +15,36 @@ let monthSelector;
 let monthScrollLeftBtn;
 let monthScrollRightBtn;
 
+const FAVORITE_SCHOOL_KEY = 'cardapio_fav_school';
+
+function getFavoriteSchool() {
+    return localStorage.getItem(FAVORITE_SCHOOL_KEY) || null;
+}
+
+function setFavoriteSchool(key) {
+    const current = getFavoriteSchool();
+    if (current === key) {
+        localStorage.removeItem(FAVORITE_SCHOOL_KEY);
+    } else {
+        localStorage.setItem(FAVORITE_SCHOOL_KEY, key);
+    }
+    updateAllFavoriteHighlights();
+}
+
+function updateAllFavoriteHighlights() {
+    const favKey = getFavoriteSchool();
+    document.querySelectorAll('.button[data-link-key]').forEach(btn => {
+        const isFav = favKey && btn.dataset.linkKey === favKey;
+        btn.classList.toggle('is-favorite-school', !!isFav);
+        const star = btn.querySelector('.btn-fav-star');
+        if (star) {
+            star.textContent = isFav ? '★' : '☆';
+            star.classList.toggle('active', !!isFav);
+            star.title = isFav ? 'Escola favoritada (Clique para desfavoritar)' : 'Marcar como minha escola favorita';
+        }
+    });
+}
+
 const ERROR_LOG_KEY = 'app_error_logs'; // Chave para armazenar logs no localStorage
 /**
  * Envia logs de erro para um serviço externo para monitoramento em produção.
@@ -97,11 +127,26 @@ function createWeekCard(weekData, isCurrent = false) {
         section.appendChild(badge);
     }
 
+    const favKey = getFavoriteSchool();
     const buttons = section.querySelectorAll('.button');
     buttons.forEach(button => {
         const linkKey = button.dataset.linkKey;
         const link = linkKey ? weekData.links[linkKey] : null;
         const statusBadge = button.querySelector('.btn-status-badge');
+        const starBtn = button.querySelector('.btn-fav-star');
+
+        const isFav = favKey && linkKey === favKey;
+        button.classList.toggle('is-favorite-school', !!isFav);
+        if (starBtn) {
+            starBtn.textContent = isFav ? '★' : '☆';
+            starBtn.classList.toggle('active', !!isFav);
+            starBtn.title = isFav ? 'Escola favoritada (Clique para remover)' : 'Marcar como minha escola favorita';
+            starBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFavoriteSchool(linkKey);
+            });
+        }
 
         if (isValidUrl(link)) {
             button.href = link;
@@ -674,6 +719,21 @@ function buildAnnualMenu(menuData) {
                 searchInput.focus();
             });
         }
+
+        // Atalhos de Teclado para Busca: '/' para focar, 'Escape' para limpar
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '/' && document.activeElement !== searchInput && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+                if (searchInput.value !== '') {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                }
+                searchInput.blur();
+            }
+        });
     }
 
     // Inicializa animações para os cards recém-adicionados
