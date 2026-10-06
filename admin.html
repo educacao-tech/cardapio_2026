@@ -384,14 +384,22 @@
                     <span class="kpi-title">Status Geral</span>
                     <span class="kpi-icon">📊</span>
                 </div>
-                <div class="kpi-value-row">
-                    <span class="kpi-value" id="kpi-percent-val">0%</span>
-                    <span class="kpi-badge-status" id="kpi-status-badge">Incompleto</span>
+                <div class="kpi-circular-progress-layout">
+                    <div class="circular-progress-wrapper" title="Progresso de preenchimento do mês">
+                        <svg class="circular-progress-svg" viewBox="0 0 72 72" width="64" height="64" aria-hidden="true">
+                            <circle class="circular-bg" cx="36" cy="36" r="28" />
+                            <circle class="circular-fill" id="kpi-circle-fill" cx="36" cy="36" r="28" stroke-dasharray="175.93" stroke-dashoffset="175.93" />
+                        </svg>
+                        <span class="circular-progress-val" id="kpi-percent-val">0%</span>
+                    </div>
+                    <div class="kpi-circular-details">
+                        <span class="kpi-badge-status" id="kpi-status-badge">Incompleto</span>
+                        <span class="kpi-sub" id="kpi-filled-ratio">0 de 0 links preenchidos</span>
+                    </div>
                 </div>
-                <div class="kpi-progress-track">
+                <div class="kpi-progress-track" style="margin-top: 8px;">
                     <div class="kpi-progress-fill" id="kpi-progress-fill" style="width: 0%;"></div>
                 </div>
-                <span class="kpi-sub" id="kpi-filled-ratio">0 de 0 links preenchidos</span>
             </div>
 
             <div class="kpi-card kpi-card-clickable" id="kpi-pending-card" role="button" tabindex="0" title="Clique para focar no próximo link pendente">
@@ -434,7 +442,7 @@
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <span class="month-chips-title">MESES DO ANO DE 2026</span>
                     <button type="button" id="btn-jump-current-month" class="btn-current-month-shortcut" title="Colocar o mês atual em primeiro plano">
-                        📍 Mês Atual: <strong id="current-month-name-display" style="text-transform: capitalize;">Setembro</strong>
+                        📍 Mês Atual: <strong id="current-month-name-display" style="text-transform: capitalize;">Outubro</strong>
                     </button>
                 </div>
                 <div class="month-chips-legend">

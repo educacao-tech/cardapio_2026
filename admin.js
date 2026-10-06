@@ -511,6 +511,14 @@ function updatePendingPanel(month) {
 }
 
 /**
+ * Posiciona o campo exatamente no centro da tela de forma imediata (sem rolagem suave)
+ */
+function scrollElementToVisualCenter(element) {
+    if (!element) return;
+    element.scrollIntoView({ behavior: 'instant', block: 'center' });
+}
+
+/**
  * Salta diretamente para um campo específico com expansão automática e pulso de foco
  */
 function jumpToSpecificField(month, weekIndex, schoolKey) {
@@ -553,21 +561,24 @@ function jumpToSpecificField(month, weekIndex, schoolKey) {
             void inputGroup.offsetHeight;
         }
 
-        // 3. Posiciona a tela no campo de forma imediata (sem animação de rolagem)
-        input.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+        // 3. Centraliza exatamente no campo de forma imediata (sem rolagem suave)
+        scrollElementToVisualCenter(input);
 
-        // 4. Move o foco imediatamente e seleciona o conteúdo (ex: "#") para substituição direta por Ctrl+V
+        // 4. Move o foco e seleciona o conteúdo (ex: "#") para substituição direta por Ctrl+V
         input.focus({ preventScroll: true });
-        input.select();
+        try {
+            input.setSelectionRange(0, input.value.length);
+        } catch (e) {
+            input.select();
+        }
 
-        // 5. Aciona o efeito visual pulsante para guiar o olhar do usuário
+        // 5. Reafirma a centralização exata no campo evitando qualquer deslocamento do navegador
+        scrollElementToVisualCenter(input);
+
+        // 6. Aciona o efeito visual pulsante para guiar o olhar do usuário
         input.classList.remove('focus-pulse');
         void input.offsetWidth;
         input.classList.add('focus-pulse');
-
-        // 6. Confirma foco e seleção imediatamente
-        input.focus({ preventScroll: true });
-        input.select();
 
         const schoolName = (linkLabels && linkLabels[schoolKey]) ? linkLabels[schoolKey].text : schoolKey;
         const weekNum = (parseInt(weekIndex) + 1) || 1;
@@ -675,14 +686,27 @@ function updateKpiCards() {
     const percentage = totalLinks > 0 ? Math.round((filledLinks / totalLinks) * 100) : 0;
     const missingCount = totalLinks - filledLinks;
 
-    // Card 1: Status Geral
+    // Card 1: Status Geral (Com Gráfico Circular SVG)
     const percentVal = document.getElementById('kpi-percent-val');
+    const circleFill = document.getElementById('kpi-circle-fill');
     const progressFill = document.getElementById('kpi-progress-fill');
     const statusBadge = document.getElementById('kpi-status-badge');
     const filledRatio = document.getElementById('kpi-filled-ratio');
 
     if (percentVal) percentVal.textContent = `${percentage}%`;
     if (progressFill) progressFill.style.width = `${percentage}%`;
+    if (circleFill) {
+        const circumference = 175.93; // 2 * PI * 28
+        const offset = circumference - (percentage / 100) * circumference;
+        circleFill.style.strokeDashoffset = offset;
+        if (percentage === 100) {
+            circleFill.style.stroke = '#10b981';
+        } else if (percentage > 0) {
+            circleFill.style.stroke = 'var(--primary-color)';
+        } else {
+            circleFill.style.stroke = 'var(--medium-gray)';
+        }
+    }
     if (statusBadge) {
         statusBadge.textContent = percentage === 100 ? '100% Completo' : 'Incompleto';
         statusBadge.classList.toggle('complete', percentage === 100);
@@ -809,14 +833,38 @@ function cleanGoogleUrl(url) {
 }
 
 function validateInput(input) {
-    const cleaned = cleanGoogleUrl(input.value.trim());
+    const rawVal = input.value.trim();
+    const cleaned = cleanGoogleUrl(rawVal);
     if (input.value !== cleaned) input.value = cleaned;
 
     const isValid = isValidUrl(cleaned);
-    input.classList.toggle('invalid-link', !isValid);
-    
-    const isRealLink = cleaned && cleaned !== '#' && cleaned !== '';
-    input.classList.toggle('valid-link', isValid && isRealLink);
+    const isPending = !cleaned || cleaned === '#' || cleaned === '';
+    const isDriveLink = isValid && !isPending && (cleaned.includes('drive.google.com') || cleaned.includes('docs.google.com'));
+
+    input.classList.toggle('invalid-link', !isValid && !isPending);
+    input.classList.toggle('valid-link', isValid && !isPending);
+    input.classList.toggle('valid-drive-link', isDriveLink);
+    input.classList.toggle('is-pending-input', isPending);
+
+    const container = input.closest('.school-input-group');
+    if (container) {
+        const statusEl = container.querySelector('.accessibility-status');
+        if (statusEl) {
+            if (isPending) {
+                statusEl.textContent = '';
+                statusEl.title = 'Link pendente (#)';
+            } else if (!isValid) {
+                statusEl.textContent = '❌';
+                statusEl.title = 'Link inválido - Verifique a URL';
+            } else if (isDriveLink) {
+                statusEl.textContent = '✅';
+                statusEl.title = 'Link verificado do Google Drive / Docs';
+            } else {
+                statusEl.textContent = '🔗';
+                statusEl.title = 'Link válido';
+            }
+        }
+    }
 }
 
 async function init(force = false) {
@@ -1066,14 +1114,19 @@ function renderMonth(month, specificIndex = null) {
                 const isPending = !linkVal || linkVal === '#' || linkVal.trim() === '';
                 const displayStyle = (showOnlyPending && !isPending) ? 'display: none;' : '';
 
+                const isRealValid = isValidUrl(linkVal) && !isPending;
+                const isDrive = isRealValid && (linkVal.includes('drive.google.com') || linkVal.includes('docs.google.com'));
+                const statusIcon = isPending ? '' : (isDrive ? '✅' : (isRealValid ? '🔗' : '❌'));
+                const statusTitle = isPending ? 'Link pendente (#)' : (isDrive ? 'Link verificado do Google Drive / Docs' : (isRealValid ? 'Link válido' : 'Link inválido'));
+
                 inputsHtml += `
                     <div class="input-group admin-input-group school-input-group" data-school-type="${key}" style="${displayStyle}">
                         <label class="compact-label"><span class="school-icon" style="cursor: pointer;" title="Clique para testar este link">${label.icon}</span> ${label.text}:</label>
                         <div class="compact-input-wrapper">
                             <input type="text" value="${linkVal || '#'}" 
                                 placeholder="${isPending ? '⚠️ Link pendente (#) - Cole a URL aqui...' : 'https://...'}"
-                                data-month="${month}" data-index="${index}" data-key="${key}" class="link-input ${isPending ? 'is-pending-input' : ''}">
-                            <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;"></span>
+                                data-month="${month}" data-index="${index}" data-key="${key}" class="link-input ${isPending ? 'is-pending-input' : ''} ${isRealValid ? 'valid-link' : ''} ${isDrive ? 'valid-drive-link' : ''}">
+                            <span class="accessibility-status" style="font-size: 0.9rem; min-width: 20px;" title="${statusTitle}">${statusIcon}</span>
                             <button class="btn-small action-preview-pdf" title="Pré-visualizar PDF">👁️</button>
                         </div>
                     </div>
@@ -1535,17 +1588,21 @@ function goToNextEmptyLink() {
             void inputGroup.offsetHeight;
         }
 
-        nextEmpty.scrollIntoView({ behavior: 'instant', block: 'nearest' });
-        
         nextEmpty.focus({ preventScroll: true });
-        nextEmpty.select();
+        try {
+            nextEmpty.setSelectionRange(0, nextEmpty.value.length);
+        } catch (e) {
+            nextEmpty.select();
+        }
 
         nextEmpty.classList.remove('focus-pulse');
         void nextEmpty.offsetWidth;
         nextEmpty.classList.add('focus-pulse');
 
-        nextEmpty.focus({ preventScroll: true });
-        nextEmpty.select();
+        scrollElementToVisualCenter(nextEmpty);
+        requestAnimationFrame(() => {
+            scrollElementToVisualCenter(nextEmpty);
+        });
 
         showToast("🎯 Foco no próximo link pendente. Cole com Ctrl+V e aperte Enter!", "info", 2000);
     } else {

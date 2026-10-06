@@ -26,7 +26,10 @@
                     <span class="brand-icon" aria-hidden="true">🥗</span>
                 </a>
                 <div class="brand-titles">
-                    <span class="brand-badge">Nutrição Escolar • Batatais</span>
+                    <div class="brand-top-row">
+                        <span class="brand-badge">Nutrição Escolar • Batatais</span>
+                        <span id="today-date-badge" class="today-date-badge" title="Data atual">📅 Hoje: Carregando...</span>
+                    </div>
                     <h1>Cardápio Anual 2026</h1>
                 </div>
             </div>
@@ -53,7 +56,9 @@
                     aria-label="Filtrar escolas">
                 <button id="clear-search" title="Limpar busca" aria-label="Limpar busca">✕</button>
             </div>
-            <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
+            <div class="month-selector-scroll-wrapper">
+                <nav id="month-selector" class="month-selector" aria-label="Navegação por meses"></nav>
+            </div>
         </div>
 
         <div id="loading-spinner" class="spinner-container">
@@ -117,43 +122,70 @@
                 </div>
 
                 <fieldset class="button-group">
-                    <legend class="group-label">Infantil / Creches</legend>
+                    <legend class="group-label">🍼 Infantil / Creches</legend>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button creche-m-verde"
                         data-link-key="creche-m-verde" title="Ver cardápio da Creche Municipal Verde"
-                        aria-label="Cardápio da Creche Municipal Verde">CRECHE M.VERDE</a>
+                        aria-label="Cardápio da Creche Municipal Verde">
+                        <span class="btn-school-icon">🍼</span>
+                        <span class="btn-school-name">CRECHE M.VERDE</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button creches" data-link-key="creches"
-                        title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">CRECHES</a>
+                        title="Ver cardápio das demais Creches" aria-label="Cardápio das demais Creches">
+                        <span class="btn-school-icon">🧸</span>
+                        <span class="btn-school-name">CRECHES</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                 </fieldset>
 
                 <fieldset class="button-group">
-                    <legend class="group-label">Ensino Fundamental</legend>
+                    <legend class="group-label">🎒 Ensino Fundamental</legend>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-braga"
                         data-link-key="fundamental-braga"
                         title="Ver cardápio das escolas: Braga, Caic, Célia, Alzira, Padre"
-                        aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">BRAGA, CAIC, CÉLIA, ALZIRA e
-                        PADRE</a>
+                        aria-label="Cardápio das escolas Braga, Caic, Célia, Alzira, Padre">
+                        <span class="btn-school-icon">🎒</span>
+                        <span class="btn-school-name">BRAGA, CAIC, CÉLIA, ALZIRA e PADRE</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-anna"
                         data-link-key="fundamental-anna"
                         title="Ver cardápio das escolas: Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto"
-                        aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">ANNA,
-                        ANSELMO, M. AP., FAGGIONI, BRAGUETTO</a>
+                        aria-label="Cardápio das escolas Anna, Anselmo, Maria Aparecida, Faggioni, Braguetto">
+                        <span class="btn-school-icon">📚</span>
+                        <span class="btn-school-name">ANNA, ANSELMO, M. AP., FAGGIONI, BRAGUETTO</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-aaugusto"
                         data-link-key="fundamental-aaugusto"
                         title="Ver cardápio das escolas: A. Augusto, Portinari, Maria Virgínia"
-                        aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">A. AUGUSTO, PORTINARI e
-                        M. VIRGÍNIA</a>
+                        aria-label="Cardápio das escolas A. Augusto, Portinari, Maria Virgínia">
+                        <span class="btn-school-icon">🏫</span>
+                        <span class="btn-school-name">A. AUGUSTO, PORTINARI e M. VIRGÍNIA</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-esther"
                         data-link-key="fundamental-esther" title="Ver cardápio da Escola Fundamental Esther Vianna"
-                        aria-label="Cardápio da Escola Fundamental Esther Vianna">ESTHER VIANNA</a>
+                        aria-label="Cardápio da Escola Fundamental Esther Vianna">
+                        <span class="btn-school-icon">📖</span>
+                        <span class="btn-school-name">ESTHER VIANNA</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                     <a href="#" target="_blank" rel="noopener noreferrer" class="button fundamental-gtl"
                         data-link-key="fundamental-gtl" title="Ver cardápio das escolas: GTL, EESA, Castelo, Washington"
-                        aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">GTL, EESA, CASTELO e
-                        WASHINGTON</a>
+                        aria-label="Cardápio das escolas GTL, EESA, Castelo, Washington">
+                        <span class="btn-school-icon">🎓</span>
+                        <span class="btn-school-name">GTL, EESA, CASTELO e WASHINGTON</span>
+                        <span class="btn-status-badge"></span>
+                    </a>
                 </fieldset>
 
                 <a href="#" target="_blank" rel="noopener noreferrer" class="button etec" data-link-key="etec"
-                    title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">ETEC /
-                    MÉDIO</a>
+                    title="Ver cardápio da ETEC / Ensino Médio" aria-label="Cardápio da ETEC / Ensino Médio">
+                    <span class="btn-school-icon">🔬</span>
+                    <span class="btn-school-name">ETEC / MÉDIO</span>
+                    <span class="btn-status-badge"></span>
+                </a>
             </section>
         </template>
     </main>
@@ -168,13 +200,19 @@
                     <h2 id="public-pdf-title" style="margin: 0; font-size: 1.1rem; color: var(--primary-color);">Cardápio Escola</h2>
                     <span id="public-pdf-subtitle" class="pdf-modal-subtitle" style="font-size: 0.75rem; color: var(--text-color-muted);"></span>
                 </div>
-                <div class="pdf-modal-actions" style="display: flex; gap: 8px; align-items: center;">
+                <div class="pdf-modal-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <a id="public-pdf-download" href="#" target="_blank" rel="noopener noreferrer" class="btn-small" style="text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Baixar Arquivo">📥 Baixar</a>
                     <a id="public-pdf-external" href="#" target="_blank" rel="noopener noreferrer" class="btn-small" style="text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Abrir em Nova Aba">🔗 Nova Aba</a>
+                    <button id="public-pdf-fullscreen" class="btn-small" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Alternar Tela Cheia">⛶ Tela Cheia</button>
                     <button id="public-pdf-share" class="btn-small" style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 0.75rem;" title="Compartilhar Cardápio">📲 Compartilhar</button>
                     <button id="close-public-pdf-modal" class="close-btn" aria-label="Fechar leitor">✕</button>
                 </div>
             </div>
-            <div class="modal-body pdf-modal-body" style="flex: 1; padding: 0; height: calc(100% - 60px);">
+            <div class="modal-body pdf-modal-body" style="flex: 1; padding: 0; height: calc(100% - 60px); position: relative;">
+                <div id="pdf-modal-loader" class="pdf-loader-overlay" style="display: none;">
+                    <div class="spinner"></div>
+                    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-color-muted); margin-top: 10px;">Carregando cardápio...</span>
+                </div>
                 <iframe id="public-pdf-iframe" src="" title="Visualizador de Cardápio" loading="lazy" style="width: 100%; height: 100%; border: none; border-radius: 0 0 12px 12px;"></iframe>
             </div>
         </div>

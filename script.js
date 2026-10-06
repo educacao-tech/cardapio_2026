@@ -101,17 +101,31 @@ function createWeekCard(weekData, isCurrent = false) {
     buttons.forEach(button => {
         const linkKey = button.dataset.linkKey;
         const link = linkKey ? weekData.links[linkKey] : null;
+        const statusBadge = button.querySelector('.btn-status-badge');
 
         if (isValidUrl(link)) {
             button.href = link;
+            button.classList.remove('disabled');
+            button.classList.add('has-link');
+            if (statusBadge) {
+                statusBadge.textContent = '✅';
+                statusBadge.title = 'Cardápio disponível';
+            }
             button.addEventListener('click', (e) => {
                 // Permite abrir em nova aba se Ctrl/Cmd for pressionado
                 if (e.ctrlKey || e.metaKey || e.button === 1) return;
                 e.preventDefault();
-                openPublicDocumentReader(link, button.textContent.trim(), weekData.title);
+                const schoolNameEl = button.querySelector('.btn-school-name');
+                const schoolName = schoolNameEl ? schoolNameEl.textContent.trim() : button.textContent.trim();
+                openPublicDocumentReader(link, schoolName, weekData.title);
             });
         } else {
             button.classList.add('disabled');
+            button.classList.remove('has-link');
+            if (statusBadge) {
+                statusBadge.textContent = '⏳';
+                statusBadge.title = 'Cardápio em breve';
+            }
         }
     });
 
@@ -189,14 +203,18 @@ function toggleSpeechForCard(cardSection, weekTitle, btn) {
         const label = group.querySelector('.group-label')?.textContent || '';
         const buttons = Array.from(group.querySelectorAll('.button:not(.disabled)'));
         if (buttons.length > 0) {
-            const schoolNames = buttons.map(b => b.textContent.trim()).join(', ');
+            const schoolNames = buttons.map(b => {
+                const nameEl = b.querySelector('.btn-school-name');
+                return nameEl ? nameEl.textContent.trim() : b.textContent.trim();
+            }).join(', ');
             speechText += `${label}: ${schoolNames}. `;
         }
     });
 
     const etecBtn = cardSection.querySelector('.button.etec:not(.disabled)');
     if (etecBtn) {
-        speechText += `Ensino Médio e ETEC: ${etecBtn.textContent.trim()}.`;
+        const etecName = etecBtn.querySelector('.btn-school-name')?.textContent.trim() || etecBtn.textContent.trim();
+        speechText += `Ensino Médio e ETEC: ${etecName}.`;
     }
 
     const utterance = new SpeechSynthesisUtterance(speechText);
@@ -223,24 +241,50 @@ function toggleSpeechForCard(cardSection, weekTitle, btn) {
  */
 function openPublicDocumentReader(url, schoolName, weekTitle) {
     let previewUrl = url;
+    let downloadUrl = url;
     if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
         previewUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+        downloadUrl = url.replace(/\/view.*/, '/export?format=pdf').replace(/\/edit.*/, '/export?format=pdf').replace(/\/preview.*/, '/export?format=pdf');
     }
 
     const modal = document.getElementById('public-pdf-modal');
     const titleEl = document.getElementById('public-pdf-title');
     const subtitleEl = document.getElementById('public-pdf-subtitle');
     const externalLink = document.getElementById('public-pdf-external');
+    const downloadLink = document.getElementById('public-pdf-download');
+    const fullscreenBtn = document.getElementById('public-pdf-fullscreen');
     const shareBtn = document.getElementById('public-pdf-share');
     const iframe = document.getElementById('public-pdf-iframe');
+    const loader = document.getElementById('pdf-modal-loader');
 
     if (modal && iframe) {
         if (titleEl) titleEl.textContent = schoolName;
         if (subtitleEl) subtitleEl.textContent = weekTitle;
         if (externalLink) externalLink.href = url;
+        if (downloadLink) downloadLink.href = downloadUrl;
+
+        if (loader) loader.style.display = 'flex';
+        iframe.onload = () => {
+            if (loader) loader.style.display = 'none';
+        };
+
         iframe.src = previewUrl;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
+
+        if (fullscreenBtn) {
+            fullscreenBtn.onclick = (e) => {
+                e.preventDefault();
+                const content = modal.querySelector('.public-pdf-content');
+                if (!document.fullscreenElement) {
+                    content.requestFullscreen?.() || content.webkitRequestFullscreen?.();
+                    fullscreenBtn.textContent = '🗗 Reduzir';
+                } else {
+                    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+                    fullscreenBtn.textContent = '⛶ Tela Cheia';
+                }
+            };
+        }
 
         if (shareBtn) {
             shareBtn.onclick = (e) => {
@@ -258,16 +302,51 @@ function openPublicDocumentReader(url, schoolName, weekTitle) {
 }
 
 /**
- * Updates the visibility of month scroll indicators based on scroll position.
+ * Renderiza o selo do dia de hoje formatado no cabeçalho.
+ */
+function initializeTodayDateBadge() {
+    const badgeEl = document.getElementById('today-date-badge');
+    if (!badgeEl) return;
+
+    const now = new Date();
+    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const monthNamesList = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    const dayOfWeek = dayNames[now.getDay()];
+    const dayNumber = String(now.getDate()).padStart(2, '0');
+    const monthName = monthNamesList[now.getMonth()];
+
+    badgeEl.textContent = `📅 Hoje: ${dayOfWeek}, ${dayNumber} de ${monthName}`;
+    badgeEl.setAttribute('aria-label', `Data de hoje: ${dayOfWeek}, ${dayNumber} de ${monthName}`);
+}
+
+/**
+ * Updates the visibility of month scroll indicators and edge fade gradients based on scroll position.
  */
 function updateMonthScrollIndicators() {
-    if (!monthSelector || !monthScrollLeftBtn || !monthScrollRightBtn) return;
+    const selector = monthSelector || document.getElementById('month-selector');
+    if (!selector) return;
 
-    const { scrollWidth, clientWidth, scrollLeft } = monthSelector;
+    const wrapper = selector.closest('.month-selector-scroll-wrapper') || selector.parentElement;
+    const { scrollWidth, clientWidth, scrollLeft } = selector;
     const isScrollable = scrollWidth > clientWidth;
 
-    monthScrollLeftBtn.style.display = (isScrollable && scrollLeft > 0) ? 'flex' : 'none';
-    monthScrollRightBtn.style.display = (isScrollable && scrollLeft + clientWidth < scrollWidth) ? 'flex' : 'none';
+    if (wrapper) {
+        const canScrollLeft = isScrollable && scrollLeft > 8;
+        const canScrollRight = isScrollable && (scrollLeft + clientWidth < scrollWidth - 8);
+        wrapper.classList.toggle('has-fade-left', canScrollLeft);
+        wrapper.classList.toggle('has-fade-right', canScrollRight);
+    }
+
+    if (monthScrollLeftBtn) {
+        monthScrollLeftBtn.style.display = (isScrollable && scrollLeft > 0) ? 'flex' : 'none';
+    }
+    if (monthScrollRightBtn) {
+        monthScrollRightBtn.style.display = (isScrollable && scrollLeft + clientWidth < scrollWidth) ? 'flex' : 'none';
+    }
 }
 
 /**
@@ -653,6 +732,9 @@ function initializeStaticFeatures() {
 
     if (themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
     loadTheme();
+
+    // Atualiza o selo da data de hoje
+    initializeTodayDateBadge();
 
     // Atualiza o ano no rodapé
     const yearElement = document.getElementById('current-year');

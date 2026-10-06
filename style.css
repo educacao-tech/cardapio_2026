@@ -29,31 +29,46 @@
     --btn-etec: #334155;
 }
 
-/* Tema Escuro (ativado via classe .dark-mode no <html>) */
+/* Tema Escuro Refinado (Deep Slate/Zinc com Contraste WCAG AAA) */
 :root.dark-mode {
     --primary-color: #38bdf8;
     --primary-color-dark: #0284c7;
-    --background-color: #0f172a;
-    --surface-color: #1e293b;
-    --medium-gray: #334155;
+    --background-color: #090d16;
+    --surface-color: #121a29;
+    --medium-gray: #1e293b;
     --dark-gray: #f8fafc;
-    --text-color: #f1f5f9;
+    --text-color: #f8fafc;
     --text-color-muted: #94a3b8;
-    --shadow-color: rgba(0, 0, 0, 0.3);
-    --focus-ring-color: rgba(56, 189, 248, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.55);
+    --focus-ring-color: rgba(56, 189, 248, 0.45);
     --highlight-background-color: rgba(56, 189, 248, 0.12);
-    --highlight-shadow-color: rgba(56, 189, 248, 0.3);
-    --glass-bg: rgba(30, 41, 59, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --highlight-shadow-color: rgba(56, 189, 248, 0.35);
+    --glass-bg: rgba(18, 26, 41, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+
+    /* Cores dos Botões com Brilho Calibrado no Modo Escuro */
+    --btn-creche-m-verde: #059669;
+    --btn-creches: #0891b2;
+    --btn-fundamental-braga: #d97706;
+    --btn-fundamental-anna: #ea580c;
+    --btn-fundamental-aaugusto: #e11d48;
+    --btn-fundamental-esther: #7c3aed;
+    --btn-fundamental-gtl: #4f46e5;
+    --btn-etec: #334155;
+}
+
+:root.dark-mode body {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 0.5px, transparent 0.5px);
 }
 
 :root.dark-mode .main-header {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.98) 100%);
-    border-block-end: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(9, 13, 22, 0.95) 0%, rgba(18, 26, 41, 0.98) 100%);
+    border-block-end: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
 
 :root.dark-mode .main-footer {
-    background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+    background: linear-gradient(135deg, #050811 0%, #0d1322 100%);
     border-top: 4px solid var(--primary-color);
     color: #94a3b8;
 }
@@ -161,7 +176,14 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.1rem;
+        gap: 0.2rem;
+    }
+
+    .brand-top-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
     .brand-badge {
@@ -175,6 +197,23 @@
         border-radius: 20px;
         color: #ffffff;
         backdrop-filter: blur(8px);
+    }
+
+    .today-date-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.18rem 0.75rem;
+        border-radius: 20px;
+        color: #ffffff;
+        backdrop-filter: blur(8px);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .main-header h1 {
@@ -286,24 +325,6 @@
         box-shadow: 0 10px 25px -5px var(--shadow-color);
     }
 
-    /* Seletor de Meses */
-    .month-selector {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        justify-content: flex-start;
-        gap: 0.6rem;
-        padding: 0.35rem;
-        flex: 1;
-        min-width: 0;
-        background-color: var(--surface-color);
-        border: 1px solid var(--medium-gray);
-        border-radius: 30px;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-        padding-inline: 10px;
-    }
-
     /* Barra de Busca */
     .search-container {
         flex: 0 0 320px;
@@ -349,35 +370,105 @@
         color: var(--text-color);
     }
 
+    /* Container com Efeito de Fade Translúcido nas Bordas de Rolagem */
+    .month-selector-scroll-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .month-selector-scroll-wrapper::before,
+    .month-selector-scroll-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        width: 32px;
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 30px;
+    }
+
+    .month-selector-scroll-wrapper::before {
+        left: 2px;
+        background: linear-gradient(to right, var(--surface-color) 25%, transparent 100%);
+    }
+
+    .month-selector-scroll-wrapper::after {
+        right: 2px;
+        background: linear-gradient(to left, var(--surface-color) 25%, transparent 100%);
+    }
+
+    .month-selector-scroll-wrapper.has-fade-left::before {
+        opacity: 1;
+    }
+
+    .month-selector-scroll-wrapper.has-fade-right::after {
+        opacity: 1;
+    }
+
+    /* Seletor de Meses - Segmented Pill */
+    .month-selector {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: 0.45rem;
+        padding: 0.3rem 0.45rem;
+        flex: 1;
+        min-width: 0;
+        background-color: var(--surface-color);
+        border: 1px solid var(--medium-gray);
+        border-radius: 35px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
     .month-selector::-webkit-scrollbar {
         display: none;
     }
 
     .month-nav-btn {
-        background-color: var(--background-color);
-        border: 1.5px solid var(--medium-gray);
-        color: var(--text-color);
-        padding: 0.5rem 1.15rem;
-        border-radius: 20px;
+        background-color: transparent;
+        border: 1px solid transparent;
+        color: var(--text-color-muted);
+        padding: 0.52rem 1.25rem;
+        border-radius: 25px;
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 700;
         white-space: nowrap;
         cursor: pointer;
-        transition: all 0.25s ease;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .month-nav-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
+        border-color: var(--medium-gray);
+        color: var(--text-color);
+        background-color: var(--background-color);
         transform: translateY(-1px);
     }
 
     .month-nav-btn.active {
         background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
         color: #ffffff;
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
-        animation: month-pulse 2s infinite;
+        font-weight: 800;
+        border-color: transparent;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+        transform: scale(1.02);
+    }
+
+    :root.dark-mode .month-nav-btn.active {
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.45);
     }
 
     @keyframes month-pulse {
@@ -916,6 +1007,52 @@
 
     .etec {
         background-color: var(--btn-etec);
+    }
+
+    /* Ambient Glow nos Botões no Modo Escuro */
+    :root.dark-mode .button:hover {
+        transform: translateY(-3px) scale(1.02);
+        filter: brightness(1.15);
+    }
+
+    :root.dark-mode .creche-m-verde:hover {
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+        border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    :root.dark-mode .creches:hover {
+        box-shadow: 0 6px 20px rgba(8, 145, 178, 0.45);
+        border-color: rgba(34, 211, 238, 0.4);
+    }
+
+    :root.dark-mode .fundamental-braga:hover {
+        box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45);
+        border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    :root.dark-mode .fundamental-anna:hover {
+        box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
+        border-color: rgba(251, 146, 60, 0.4);
+    }
+
+    :root.dark-mode .fundamental-aaugusto:hover {
+        box-shadow: 0 6px 20px rgba(225, 29, 72, 0.45);
+        border-color: rgba(251, 113, 133, 0.4);
+    }
+
+    :root.dark-mode .fundamental-esther:hover {
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+        border-color: rgba(167, 139, 250, 0.4);
+    }
+
+    :root.dark-mode .fundamental-gtl:hover {
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+        border-color: rgba(129, 140, 248, 0.4);
+    }
+
+    :root.dark-mode .etec:hover {
+        box-shadow: 0 6px 20px rgba(148, 163, 184, 0.35);
+        border-color: rgba(203, 213, 225, 0.4);
     }
 
     /* Destaque de Semanas */
@@ -2011,6 +2148,62 @@
     line-height: 1;
 }
 
+/* --- Circular Progress Layout no KPI --- */
+.kpi-circular-progress-layout {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 0.3rem;
+}
+
+.circular-progress-wrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.circular-progress-svg {
+    transform: rotate(-90deg);
+    width: 64px;
+    height: 64px;
+}
+
+.circular-bg {
+    fill: none;
+    stroke: var(--medium-gray);
+    stroke-width: 6;
+}
+
+.circular-fill {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+}
+
+.circular-progress-val {
+    position: absolute;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-color);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.kpi-circular-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
 .kpi-value-row {
     display: flex;
     align-items: baseline;
@@ -2661,6 +2854,16 @@
     margin-left: 8px;
 }
 
+.link-input {
+    scroll-margin-top: 100px;
+    scroll-margin-bottom: 130px;
+}
+
+.school-input-group {
+    scroll-margin-top: 100px;
+    scroll-margin-bottom: 130px;
+}
+
 .link-input.is-pending-input {
     border-color: #f59e0b;
     background-color: rgba(245, 158, 11, 0.04);
@@ -2675,6 +2878,41 @@
     color: #d97706;
     font-style: italic;
     opacity: 0.85;
+}
+
+/* --- Feedback de Validação em Tempo Real --- */
+.link-input.valid-link {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.04) !important;
+}
+
+.link-input.valid-link:focus {
+    border-color: #059669 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22) !important;
+}
+
+.link-input.valid-drive-link {
+    border-color: #10b981 !important;
+}
+
+.link-input.invalid-link {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.04) !important;
+}
+
+.link-input.invalid-link:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+}
+
+.accessibility-status {
+    font-size: 0.95rem;
+    min-width: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Pulso de foco para guiar a visão do usuário */
@@ -2696,6 +2934,15 @@
 .link-input.focus-pulse {
     animation: focusPulseAnim 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     border-color: var(--primary-color) !important;
+}
+
+/* Espaço inferior de rolagem para permitir centralização visual de qualquer campo sem conflito com a barra flutuante */
+#editor-container {
+    padding-bottom: 45vh;
+}
+
+body.admin-page {
+    padding-bottom: 20vh;
 }
 
 /* --- 3. Barra de Ações Flutuante Reorganizada --- */
