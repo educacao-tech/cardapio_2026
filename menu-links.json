@@ -600,8 +600,8 @@
                 "endDate": "2026-10-30",
                 "active": true,
                 "links": {
-                    "creche-m-verde": "#",
-                    "creches": "#",
+                    "creche-m-verde": "https://docs.google.com/document/d/1LWb0x5edJLdEJyiAg-7PxBwjdypOmhe8/edit",
+                    "creches": "https://docs.google.com/document/d/12EvvIfFVCsUrAFjMKZ6KgKNYncryZxpR/edit",
                     "fundamental-braga": "#",
                     "fundamental-anna": "#",
                     "fundamental-aaugusto": "#",
