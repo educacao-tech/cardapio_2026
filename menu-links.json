@@ -540,6 +540,76 @@
                     "etec": "https://drive.google.com/file/d/1JO_KwupGL02AW9wwsyRe4UEcLcMfo477/view"
                 }
             }
+        ],
+        "outubro": [
+            {
+                "weekId": "semana1-out",
+                "title": "1ª SEM. - 05/10 a 09/10",
+                "startDate": "2026-10-05",
+                "endDate": "2026-10-09",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "https://docs.google.com/document/d/11DBkG95r3iUaCzwiDaYkvmq7P14tBx82/edit",
+                    "creches": "https://docs.google.com/document/d/1QnA44EXHCHwibz5oXSynY1MJQxSUbxsT/edit",
+                    "fundamental-braga": "https://docs.google.com/document/d/1a4biWYbV5iOouPM4PF6Qod70VSCGpBX0/edit",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana2-out",
+                "title": "2ª SEM. - 12/10 a 16/10",
+                "startDate": "2026-10-12",
+                "endDate": "2026-10-16",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana3-out",
+                "title": "3ª SEM. - 19/10 a 23/10",
+                "startDate": "2026-10-19",
+                "endDate": "2026-10-23",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            },
+            {
+                "weekId": "semana4-out",
+                "title": "4ª SEM. - 26/10 a 30/10",
+                "startDate": "2026-10-26",
+                "endDate": "2026-10-30",
+                "active": true,
+                "links": {
+                    "creche-m-verde": "#",
+                    "creches": "#",
+                    "fundamental-braga": "#",
+                    "fundamental-anna": "#",
+                    "fundamental-aaugusto": "#",
+                    "fundamental-esther": "#",
+                    "fundamental-gtl": "#",
+                    "etec": "#"
+                }
+            }
         ]
     }
 }
