@@ -6,8 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <div id="toast-container"></div>
+    <link rel="stylesheet" href="style.css?v=2026.2">
     <style>
         .admin-container { max-width: 900px; margin: 2rem auto; padding: 2rem; background: var(--surface-color); border-radius: 16px; box-shadow: 0 4px 30px var(--shadow-color); }
         .week-edit-card { border: 1px solid var(--medium-gray); padding: 1.5rem; margin-bottom: 2rem; border-radius: 12px; background: var(--surface-color); transition: transform 0.2s; }
@@ -43,14 +42,16 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
+    <style id="session-overlay-style"></style>
     <script>
         // Se já houver token salvo na sessão, oculta o overlay de login imediatamente para evitar redirecionamentos ao trocar de tema
         if (sessionStorage.getItem('admin_token')) {
-            document.write('<style>#login-overlay { display: none !important; }</style>');
+            document.getElementById('session-overlay-style').textContent = '#login-overlay { display: none !important; }';
         }
     </script>
 </head>
 <body class="admin-page">
+    <div id="toast-container"></div>
     <div id="dev-mode-banner" class="dev-mode-banner">
         ⚠️ MODO DE DESENVOLVIMENTO ATIVO - Funcionalidades de segurança desabilitadas.
     </div>
