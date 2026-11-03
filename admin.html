@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2026.2">
+    <link rel="stylesheet" href="style.css?v=2026.6">
     <style>
         .admin-container { max-width: 900px; margin: 2rem auto; padding: 2rem; background: var(--surface-color); border-radius: 16px; box-shadow: 0 4px 30px var(--shadow-color); }
         .week-edit-card { border: 1px solid var(--medium-gray); padding: 1.5rem; margin-bottom: 2rem; border-radius: 12px; background: var(--surface-color); transition: transform 0.2s; }
@@ -15,9 +15,6 @@
         input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--medium-gray); width: 100%; font-size: 0.9rem; transition: all 0.2s; }
         input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px var(--focus-ring-color); }
         label { font-size: 0.8rem; font-weight: bold; margin-bottom: 2px; }
-        .actions { position: sticky; bottom: 20px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 1rem; border: 1px solid var(--medium-gray); border-radius: 50px; display: flex; gap: 1rem; margin-top: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .logout-btn { background-color: #dc3545; color: white; border: none; padding: 0.5rem 1.2rem; border-radius: 25px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
-        .logout-btn:hover { opacity: 0.8; }
         
         /* Estilos do Overlay de Login */
         #login-overlay {
@@ -372,10 +369,20 @@
     </script>
 
     <div class="admin-container">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
-            <h1 style="margin: 0; color: var(--primary-color); flex: 1; text-align: center;">🛠️ Painel Administrativo</h1>
-            <button type="button" class="theme-toggle-btn" style="width: 44px; height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Alternar tema">🌙</button>
-        </div>
+        <header class="admin-header-modern">
+            <div class="admin-brand-left">
+                <span class="admin-pill-badge">Nutrição Escolar • Batatais 2026</span>
+                <h1 class="admin-main-title">🛠️ Painel Administrativo</h1>
+                <p class="admin-subtitle">Gestão centralizada e publicação em tempo real dos cardápios da rede municipal</p>
+            </div>
+            <div class="admin-header-actions">
+                <div class="system-status-pill" id="system-status-indicator" title="Servidor Node e API conectados">
+                    <span class="status-live-dot"></span>
+                    <span class="status-live-text">Servidor Ativo</span>
+                </div>
+                <button type="button" class="theme-toggle-btn admin-theme-btn" title="Alternar tema claro/escuro">🌙</button>
+            </div>
+        </header>
         <div id="status-msg"></div>
 
         <!-- Cards de KPIs do Topo (Resumo do Mês Selecionado) -->
@@ -531,27 +538,30 @@
 
         <!-- Modal de Pré-visualização de PDF -->
         <div id="pdf-preview-modal" class="modal-overlay" aria-hidden="true">
-            <div class="modal-content" style="max-width: 90%; width: 90%; height: 90vh; display: flex; flex-direction: column;">
-                <div class="modal-header">
-                    <h2>📄 Pré-visualização do Documento</h2>
-                    <button id="close-pdf-modal" class="close-btn" aria-label="Fechar modal">✕</button>
+            <div class="modal-content" style="max-width: 90%; width: 90%; height: 90vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 16px;">
+                <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--medium-gray);">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2 style="margin: 0; font-size: 1.15rem; color: var(--text-color);">📄 Pré-visualização do Documento</h2>
+                        <a id="pdf-external-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-small" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; background: rgba(2, 132, 199, 0.12); color: var(--primary-color); border: 1px solid rgba(2, 132, 199, 0.3);" title="Abrir link original no Google Drive em nova aba">🔗 Abrir no Google Drive ↗</a>
+                    </div>
+                    <button id="close-pdf-modal" class="close-btn" aria-label="Fechar modal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-color); line-height: 1;">✕</button>
                 </div>
-                <div class="modal-body" style="flex: 1; padding: 0;">
-                    <iframe id="pdf-preview-iframe" src="" style="width: 100%; height: 100%; border: none; border-radius: 0 0 12px 12px;"></iframe>
+                <div class="modal-body" style="flex: 1; padding: 0; position: relative;">
+                    <iframe id="pdf-preview-iframe" src="" style="width: 100%; height: 100%; border: none;" allow="autoplay"></iframe>
                 </div>
             </div>
         </div>
 
         <!-- Barra de Ações Flutuante (Floating Dock) Reorganizada -->
         <div class="actions">
-            <!-- Badge de Progresso Compacto no Rodapé (mantido para compatibilidade) -->
-            <div id="admin-dashboard" class="progress-badge-footer" style="display: none;" title="Progresso de Preenchimento">
-                <span class="badge-label">PROGRESSO</span>
-                <span id="stat-percent">0%</span>
-                <div id="stat-alerts" class="alert-badge" style="display: none;" title="Existem links pendentes (#)">
+            <!-- Badge de Progresso Compacto e Elegante no Rodapé -->
+            <div id="admin-dashboard" class="footer-progress-badge" style="display: none;" title="Progresso de Preenchimento do Mês">
+                <span class="footer-progress-label">Progresso</span>
+                <span id="stat-percent" class="footer-progress-value">0%</span>
+                <div id="stat-alerts" class="footer-alert-badge" style="display: none;" title="Existem links pendentes (#)">
                     <span class="alert-icon">⚠️</span>
-                    <span id="missing-count">0</span>
-                    <button type="button" id="next-empty-btn" class="btn-small" style="margin-left: 5px; padding: 1px 6px; font-size: 0.6rem; background: #dc3545; color: white; border: none; border-radius: 10px;" title="Ir para o próximo link vazio">Pular para ➔</button>
+                    <span id="missing-count" class="footer-missing-count">0</span>
+                    <button type="button" id="next-empty-btn" class="footer-jump-btn" title="Ir para o próximo link vazio">Pular ➔</button>
                 </div>
             </div>
 
@@ -587,7 +597,7 @@
 
             <!-- Grupo 3: Sessão -->
             <div class="actions-group actions-group-session">
-                <button type="button" id="logout-btn" class="logout-btn" title="Encerrar sessão de administração">Sair</button>
+                <button type="button" id="logout-btn" class="logout-btn" title="Encerrar sessão de administração">🚪 Sair</button>
             </div>
         </div>
     </div>
