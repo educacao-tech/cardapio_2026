@@ -119,33 +119,49 @@ app.post('/api/menu', loginLimiter, authMiddleware, (req, res) => {
 });
 
 /**
- * Função para automação de Git Add, Commit e Push
+ * Função para automação segura de Git Add, Commit e Push (Imune a Command Injection)
  */
 function autoGitPush(user = 'Desconhecido') {
-    const { exec } = require('child_process');
+    const { execFile } = require('child_process');
     const cwd = __dirname;
+    const sanitizedUser = String(user).replace(/[^a-zA-Z0-9@._ -]/g, '').slice(0, 50) || 'Admin';
     const nowStr = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const commitMsg = `Atualização do cardápio via Admin por ${user} (${nowStr})`;
-    const cmd = `git add menu-links.json audit-log.json && git commit -m "${commitMsg.replace(/"/g, '\\"')}" && git push origin main`;
+    const commitMsg = `Atualização do cardápio via Admin por ${sanitizedUser} (${nowStr})`;
 
-    console.log(`🚀 [Git Auto-Push Ultrarrápido] Enviando alterações para o GitHub...`);
+    console.log(`🚀 [Git Auto-Push Seguro] Enviando alterações para o GitHub via execFile...`);
 
-    exec(cmd, { cwd }, (execErr, stdoutRes, stderrRes) => {
-        if (execErr) {
-            // Se não houver nada para commitar, o git apenas avisa e segue normal
-            if (execErr.message.includes('nothing to commit')) {
-                console.log('ℹ️ [Git Auto-Push] Nenhuma alteração pendente para commit.');
-                return;
-            }
-            console.error('❌ [Git Auto-Push] Falha ao publicar no Git:', execErr.message);
-            if (stderrRes) console.error('Stderr:', stderrRes);
+    // 1. git add menu-links.json audit-log.json
+    execFile('git', ['add', 'menu-links.json', 'audit-log.json'], { cwd }, (addErr, addOut, addErrOut) => {
+        if (addErr) {
+            console.error('❌ [Git Auto-Push] Falha no git add:', addErr.message);
+            if (addErrOut) console.error('Stderr:', addErrOut);
             return;
         }
-        console.log('✅ [Git Auto-Push] Publicado com sucesso no GitHub:\n', stdoutRes);
 
-        // Invalida cache de commit do rodapé para atualização imediata
-        cachedCommitInfo = null;
-        lastCommitFetchTime = 0;
+        // 2. git commit -m "..."
+        execFile('git', ['commit', '-m', commitMsg], { cwd }, (commitErr, commitOut, commitErrOut) => {
+            if (commitErr) {
+                if (commitErr.message.includes('nothing to commit') || (commitOut && commitOut.includes('nothing to commit'))) {
+                    console.log('ℹ️ [Git Auto-Push] Nenhuma alteração pendente para commit.');
+                    return;
+                }
+                console.error('❌ [Git Auto-Push] Falha no git commit:', commitErr.message);
+                if (commitErrOut) console.error('Stderr:', commitErrOut);
+                return;
+            }
+
+            // 3. git push origin main
+            execFile('git', ['push', 'origin', 'main'], { cwd }, (pushErr, pushOut, pushErrOut) => {
+                if (pushErr) {
+                    console.error('❌ [Git Auto-Push] Falha no git push:', pushErr.message);
+                    if (pushErrOut) console.error('Stderr:', pushErrOut);
+                    return;
+                }
+                console.log('✅ [Git Auto-Push] Publicado com sucesso no GitHub:\n', pushOut);
+                cachedCommitInfo = null;
+                lastCommitFetchTime = 0;
+            });
+        });
     });
 }
 
@@ -281,8 +297,53 @@ app.post('/api/notify-update', loginLimiter, authMiddleware, (req, res) => {
     .catch(() => res.status(500).json({ success: false }));
 });
 
-// Servidor de arquivos estáticos
-app.use(express.static(path.join(__dirname, '.')));
+// Lista de arquivos confidenciais do backend proibidos para download estático
+const SENSITIVE_STATIC_FILES = new Set([
+    'server.js',
+    'auth.js',
+    'subscriptions.json',
+    'audit-log.json',
+    'package.json',
+    'package-lock.json',
+    'nodemon.json',
+    '.gitignore',
+    '.env'
+]);
+
+// Middleware de proteção de segurança para arquivos estáticos
+app.use((req, res, next) => {
+    try {
+        const rawPath = decodeURIComponent(req.path);
+        const cleanPath = path.normalize(rawPath).replace(/^[/\\]+/, '');
+        const baseName = path.basename(cleanPath).toLowerCase();
+        const firstSegment = cleanPath.split(/[/\\]/)[0].toLowerCase();
+
+        // 1. Bloqueia dotfiles e dotfolders (.git, .env, etc.)
+        if (baseName.startsWith('.') || firstSegment.startsWith('.')) {
+            return res.status(403).json({ error: 'Acesso negado a arquivos ocultos ou de configuração.' });
+        }
+
+        // 2. Bloqueia diretórios de backup e arquivos temporários/dumps
+        if (firstSegment === 'backups' || cleanPath.endsWith('.bak') || cleanPath.endsWith('.tmp')) {
+            return res.status(403).json({ error: 'Acesso negado a diretórios de backup.' });
+        }
+
+        // 3. Bloqueia código-fonte do servidor, dependências e credenciais
+        if (SENSITIVE_STATIC_FILES.has(baseName)) {
+            return res.status(403).json({ error: 'Acesso negado a este recurso do backend.' });
+        }
+
+        next();
+    } catch (e) {
+        return res.status(400).json({ error: 'Caminho inválido.' });
+    }
+});
+
+// Servidor de arquivos estáticos seguro com negação explícita de dotfiles
+app.use(express.static(path.join(__dirname, '.'), {
+    dotfiles: 'deny',
+    index: 'index.html'
+}));
 
 let PORT = parseInt(process.env.PORT, 10) || 5500;
 

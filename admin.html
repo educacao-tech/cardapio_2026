@@ -146,9 +146,28 @@
             document.getElementById('password-error').style.display = 'block';
         }
 
-        // Wrapper para interceptar todas as chamadas fetch e injetar o token de auth
+        // Wrapper seguro para interceptar chamadas fetch da API interna e injetar o token de auth
         const originalFetch = window.fetch;
         window.fetch = async (...args) => {
+            const rawUrl = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+            let isInternalApi = false;
+
+            try {
+                // Valida se a requisição é estritamente para endpoints internos /api/ da mesma origem
+                if (rawUrl.startsWith('/api/') || rawUrl.startsWith('api/')) {
+                    isInternalApi = true;
+                } else if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                    const parsedUrl = new URL(rawUrl, window.location.origin);
+                    const isSameHost = parsedUrl.hostname === window.location.hostname || parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1';
+                    const isSameOrFallbackPort = !parsedUrl.port || parsedUrl.port === window.location.port || ['5500', '5501', '5502', '3000'].includes(parsedUrl.port);
+                    if (isSameHost && isSameOrFallbackPort && parsedUrl.pathname.startsWith('/api/')) {
+                        isInternalApi = true;
+                    }
+                }
+            } catch (err) {
+                isInternalApi = false;
+            }
+
             const token = sessionStorage.getItem('admin_token');
             const email = sessionStorage.getItem('admin_email') || 'madscold@gmail.com';
             const twoFa = sessionStorage.getItem('admin_2fa');
@@ -157,7 +176,8 @@
 
             const cAns = sessionStorage.getItem('captcha_ans');
 
-            if (token) {
+            // Só injeta credenciais confidenciais se for uma requisição interna verificada
+            if (token && isInternalApi) {
                 const options = args[1] || {};
                 if (options.headers instanceof Headers) {
                     options.headers.set('x-admin-token', token);

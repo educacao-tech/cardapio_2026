@@ -1,64 +1,76 @@
-const CACHE_NAME = 'cardapio-batatais-v1.0.3';
-const ASSETS = [
-  '/',
+const CACHE_NAME = 'cardapio-batatais-v1.1.0';
+
+// Apenas arquivos públicos essenciais existentes no repositório
+const ESSENTIAL_ASSETS = [
+  './',
   'index.html',
-  'admin.html',
   'style.css',
   'script.js',
-  'admin.js',
-  'menu-links.json',
-  'assets/success.mp3',
-  'assets/no-results.svg',
-  'assets/no-data.svg'
+  'manifest.json',
+  'menu-links.json'
 ];
 
-// Instalação: Salva os arquivos estáticos no cache
+// Instalação resiliente: Salva os arquivos estáticos no cache sem quebrar por 404
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of ESSENTIAL_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn(`[SW] Aviso: Asset não encontrado durante cache: ${asset}`, err.message);
+        }
+      }
+    })
   );
 });
 
-// Ativação: Limpa caches antigos
+// Ativação: Limpa caches antigos e assume controle imediato
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Estratégia: Tenta rede, se falhar ou estiver offline, usa o cache
+// Estratégia de Fetch: Tenta rede, se falhar ou estiver offline, usa o cache
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Estratégia Network First para o arquivo de dados (JSON) sem guardar cache obsoleto
+  // 1. Não intercepta requisições de API interna nem páginas administrativas
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('admin')) {
+    return;
+  }
+
+  // 2. Estratégia Network First para o arquivo de dados (JSON) do cardápio
   if (url.pathname.includes('menu-links.json')) {
     event.respondWith(
       fetch(event.request, { cache: 'no-cache' })
         .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         })
         .catch((error) => {
-          console.warn('[SW] Falha na rede para o JSON, tentando cache...', error);
+          console.warn('[SW] Falha na rede para o JSON, servindo cache offline...', error);
           return caches.match(event.request);
         })
     );
     return;
   }
 
+  // 3. Estratégia Stale-While-Revalidate / Cache com fallback para os demais assets públicos
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request).then((response) => {
         if (response) return response;
         if (event.request.mode === 'navigate') {
-          if (url.pathname.includes('admin.html')) {
-            return caches.match('admin.html');
-          }
           return caches.match('index.html');
         }
       });
