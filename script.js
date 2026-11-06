@@ -187,7 +187,7 @@ function createWeekCard(weekData, isCurrent = false) {
                     title: `Cardápio Batatais - ${weekTitle}`,
                     text: message,
                     url: shareUrl
-                }).catch(() => {});
+                }).catch(() => { });
             } else {
                 const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
                 window.open(whatsappUrl, '_blank');
@@ -336,7 +336,7 @@ function openPublicDocumentReader(url, schoolName, weekTitle) {
                 e.preventDefault();
                 const shareText = `Confira o cardápio da ${schoolName} (${weekTitle}):\n\n${url}`;
                 if (navigator.share) {
-                    navigator.share({ title: `Cardápio ${schoolName}`, text: shareText, url: url }).catch(() => {});
+                    navigator.share({ title: `Cardápio ${schoolName}`, text: shareText, url: url }).catch(() => { });
                 } else {
                     const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
                     window.open(waUrl, '_blank');
@@ -431,11 +431,11 @@ async function showMonth(monthName) {
     if (currentWrapper) {
         currentWrapper.style.opacity = '0';
         currentWrapper.style.transform = 'translateY(-10px)';
-        
+
         // Aguarda a transição de 0.4s definida no CSS
         await new Promise(resolve => setTimeout(resolve, 400));
         currentWrapper.classList.add('is-hidden');
-        
+
         // Limpa estilos inline para não interferir no CSS base
         currentWrapper.style.opacity = '';
         currentWrapper.style.transform = '';
@@ -502,7 +502,7 @@ function buildAnnualMenu(menuData) {
     const today = new Date(new Date().setUTCHours(0, 0, 0, 0));
     const currentYear = today.getFullYear().toString();
     const yearData = menuData[currentYear];
-    const currentMonthIndex = today.getUTCMonth();    
+    const currentMonthIndex = today.getUTCMonth();
     const activeMonthsData = [];
 
     let totalActiveWeeks = 0;
@@ -570,29 +570,6 @@ function buildAnnualMenu(menuData) {
         }
     }
 
-    // Configura o banner de destaque da semana atual
-    const featuredBanner = document.getElementById('featured-week-banner');
-    const featuredTitle = document.getElementById('featured-week-title');
-    const featuredJumpBtn = document.getElementById('featured-jump-btn');
-
-    if (currentActiveWeekData && featuredBanner && featuredTitle) {
-        featuredBanner.style.display = 'flex';
-        featuredTitle.textContent = currentActiveWeekData.title;
-
-        if (featuredJumpBtn) {
-            featuredJumpBtn.onclick = () => {
-                const targetWeekCard = document.getElementById(currentActiveWeekData.weekId);
-                if (targetWeekCard) {
-                    targetWeekCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    targetWeekCard.classList.add('highlight-week');
-                    setTimeout(() => targetWeekCard.classList.remove('highlight-week'), 1500);
-                }
-            };
-        }
-    } else if (featuredBanner) {
-        featuredBanner.style.display = 'none';
-    }
-
     renderMonthSelector(activeMonthsData);
 
     if (totalActiveWeeks === 0) {
@@ -622,7 +599,7 @@ function buildAnnualMenu(menuData) {
             if (parentMonth) monthFromHash = parentMonth.id.replace('month-', '');
         }
     }
-    
+
     // Prioridade: Mês do Hash > Mês Atual > Último Mês Ativo (Mês mais recente disponível)
     const activeMonthNames = activeMonthsData.map(m => m.name);
     const monthToShow = monthFromHash || (activeMonthNames.includes(currentMonthName) ? currentMonthName : activeMonthNames[activeMonthNames.length - 1]);
@@ -849,7 +826,7 @@ function initializeStaticFeatures() {
 
         versionBtn.addEventListener('click', () => toggleModal(true));
         if (closeBtn) closeBtn.addEventListener('click', () => toggleModal(false));
-        
+
         modal.addEventListener('click', (e) => {
             if (e.target === modal) toggleModal(false);
         });
@@ -887,11 +864,11 @@ async function loadMenuData() {
         // Transição do Spinner para o Checkmark
         const spinnerIcon = spinner.querySelector('.spinner');
         const checkmarkWrapper = spinner.querySelector('.checkmark-wrapper');
-        
+
         if (spinnerIcon && checkmarkWrapper) {
             spinnerIcon.style.display = 'none';
             checkmarkWrapper.style.display = 'flex';
-            
+
             // Toca o som sincronizado com o checkmark
             const successSound = new Audio('assets/success.mp3');
             successSound.volume = 0.3;
@@ -1084,7 +1061,7 @@ async function loadGitHubCommitInfo() {
         if (res.ok) {
             commitData = await res.json();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     // 2. Fallback: Se a rota do backend falhar ou estiver estática, busca diretamente da API pública do GitHub
     if (!commitData || !commitData.hash) {

@@ -1462,7 +1462,20 @@ function initTheme() {
 }
 
 /**
- * Busca e exibe o histórico de alterações no modal
+ * Sanitiza strings para prevenir Cross-Site Scripting (XSS)
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+/**
+ * Busca e exibe o histórico de alterações no modal de forma segura (XSS-safe)
  */
 async function showAuditLog() {
     const modal = document.getElementById('audit-modal');
@@ -1486,9 +1499,9 @@ async function showAuditLog() {
             const date = new Date(log.timestamp).toLocaleString('pt-BR');
             return `
                 <li>
-                    <strong>${date}</strong><br>
-                    <span style="color: var(--text-color-muted)">Usuário:</span> ${log.user}<br>
-                    <span style="color: var(--primary-color)">Ação:</span> ${log.action}
+                    <strong>${escapeHtml(date)}</strong><br>
+                    <span style="color: var(--text-color-muted)">Usuário:</span> ${escapeHtml(log.user)}<br>
+                    <span style="color: var(--primary-color)">Ação:</span> ${escapeHtml(log.action)}
                 </li>
             `;
         }).join('');

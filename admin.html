@@ -235,16 +235,17 @@
             return response;
         };
 
-        // Função unificada para realizar o login
-        const performLogin = () => {
+        // Função unificada para realizar o login via endpoint seguro com Token de Sessão Assinado
+        const performLogin = async () => {
             const pwdInput = document.getElementById('admin-pwd');
             const twoFaInput = document.getElementById('admin-2fa');
             const captchaInput = document.getElementById('captcha-ans');
             const errorMsg = document.getElementById('password-error');
             const loginBtn = document.getElementById('login-btn');
-            const email = 'madscold@gmail.com'; // E-mail fixo conforme configurado no servidor
-            const pwd = pwdInput.value.trim(); // Remove espaços acidentais
-            const twoFa = twoFaInput.value.trim();
+            const email = 'madscold@gmail.com'; // E-mail institucional do administrador
+            const pwd = pwdInput.value.trim();
+            const twoFa = twoFaInput ? twoFaInput.value.trim() : '';
+            const captchaAns = captchaInput ? captchaInput.value.trim() : '';
 
             if (pwd.length < 6) {
                 triggerShake();
@@ -258,39 +259,60 @@
             loginBtn.innerHTML = '<span class="btn-spinner"></span> Verificando...';
             loginBtn.disabled = true;
 
-            sessionStorage.setItem('admin_token', pwd);
-            sessionStorage.setItem('admin_email', email);
-            if (twoFa) {
-                sessionStorage.setItem('admin_2fa', twoFa);
-            }
-            if (captchaInput.value) {
-                sessionStorage.setItem('captcha_ans', captchaInput.value.trim());
-            }
-            updateActivity(); // Inicia o timer no momento do login bem-sucedido
+            try {
+                const loginRes = await originalFetch(getApiUrl('/api/login'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: pwd,
+                        email: email,
+                        twoFa: twoFa || undefined,
+                        captchaAns: captchaAns || undefined,
+                        captchaToken: currentCaptchaToken || undefined
+                    })
+                });
 
-            // Tenta buscar a API. Se falhar, verifica se o servidor está na porta 5500
-            fetch(getApiUrl('/api/menu')).then(async (res) => {
-                if (res.ok) {
+                const data = await loginRes.json().catch(() => ({}));
+
+                if (loginRes.ok && data.success && data.token) {
+                    sessionStorage.setItem('admin_token', data.token);
+                    sessionStorage.setItem('admin_email', data.email || email);
+                    sessionStorage.removeItem('captcha_ans');
+                    sessionStorage.removeItem('admin_2fa');
+                    updateActivity();
+
                     document.getElementById('login-overlay').style.display = 'none';
+                    pwdInput.value = '';
+                    if (twoFaInput) twoFaInput.value = '';
+                    if (captchaInput) captchaInput.value = '';
+
                     if (typeof init === 'function') init();
-                } else if (res.status !== 401) {
-                    const isJson = res.headers.get('content-type')?.includes('application/json');
-                    const data = isJson ? await res.clone().json().catch(() => ({ balance:0 })) : {};
-                    
-                    displayErrorMessage(data.error || `Erro ${res.status}: Falha na comunicação.`);
+                } else {
                     triggerShake();
-                    console.error('Erro na autenticação:', res.status, res.statusText);
+                    displayErrorMessage(data.error || 'Credenciais inválidas.');
+                    pwdInput.style.borderColor = '#dc3545';
+                    pwdInput.value = '';
+                    pwdInput.focus();
+
+                    if (data.requireCaptcha) {
+                        showCaptchaUI();
+                    }
+                    if (data.require2FA) {
+                        const twoFaContainer = document.getElementById('2fa-container');
+                        if (twoFaContainer) twoFaContainer.style.display = 'block';
+                        if (twoFaInput) twoFaInput.focus();
+                    }
                 }
-            }).catch(err => {
-                const target = getApiUrl('/api/menu');
+            } catch (err) {
+                const target = getApiUrl('/api/login');
                 displayErrorMessage(`Não foi possível conectar ao servidor em ${target}. Certifique-se de que o comando 'node server.js' está rodando.`);
                 triggerShake();
                 pwdInput.value = '';
                 pwdInput.focus();
-            }).finally(() => {
+            } finally {
                 loginBtn.innerText = "Entrar";
                 loginBtn.disabled = false;
-            });
+            }
         };
 
         // Atribui o evento de clique ao botão
